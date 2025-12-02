@@ -1,14 +1,54 @@
 import React from 'react';
-import { Crown, Dumbbell, Instagram, ExternalLink } from 'lucide-react';
+import { UtensilsCrossed, Dumbbell, Instagram, ExternalLink } from 'lucide-react';
+import { LanguageProps } from '../types';
 
-export const ProQual: React.FC = () => {
+export const ProQual: React.FC<LanguageProps> = ({ lang }) => {
+  const content = {
+    en: {
+      title: "Services & Social",
+      box1: {
+        title: "COURSE INQUIRY",
+        cta: "Start Now",
+        sub: "Customized Programming"
+      },
+      box2: {
+        title: "EEL ORDERING",
+        cta: "Order Now",
+        sub: "Premium Quality Eel"
+      },
+      box3: {
+        title: "INSTAGRAM",
+        cta: "@jasonhuang_ifbbpro",
+        sub: "Follow the Daily Process"
+      }
+    },
+    cn: {
+      title: "服務與社群",
+      box1: {
+        title: "課程諮詢",
+        cta: "立即開始",
+        sub: "客製化訓練安排"
+      },
+      box2: {
+        title: "鰻魚訂購",
+        cta: "立即訂購",
+        sub: "頂級白燒鰻"
+      },
+      box3: {
+        title: "INSTAGRAM",
+        cta: "@jasonhuang_ifbbpro",
+        sub: "追蹤日常訓練"
+      }
+    }
+  };
+
+  const t = content[lang];
+
   return (
     <section className="bg-zinc-950 py-20 px-6">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-yellow-500 font-bold tracking-widest uppercase mb-2">Connect & Status</h2>
-          <h3 className="text-3xl md:text-5xl font-black text-white uppercase">Pro Status & Coaching</h3>
-          <p className="text-gray-400 mt-4 text-lg">Join the team or follow the journey.</p>
+          <h3 className="text-3xl md:text-5xl font-black text-white uppercase font-display">{t.title}</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -22,26 +62,31 @@ export const ProQual: React.FC = () => {
             <div className="bg-zinc-800 p-4 rounded-full mb-6 group-hover:bg-yellow-500/20 transition-colors">
               <Dumbbell className="w-10 h-10 text-yellow-500" />
             </div>
-            <h4 className="text-white font-bold text-xl uppercase mb-2">COURSE INQUIRY</h4>
+            <h4 className="text-white font-bold text-xl uppercase mb-2 font-display">{t.box1.title}</h4>
             <div className="flex items-center gap-2 text-yellow-500 font-medium text-lg">
-              <span>Start Now</span>
+              <span>{t.box1.cta}</span>
               <ExternalLink size={16} />
             </div>
-            <p className="text-gray-400 mt-2 text-sm">Customized Programming</p>
+            <p className="text-gray-400 mt-2 text-sm">{t.box1.sub}</p>
           </a>
 
-          {/* Box 2: Center - Pro Card (Static Achievement) */}
-          <div className="bg-zinc-900 p-8 rounded-lg border-2 border-yellow-500/50 hover:border-yellow-500 transition-colors duration-300 flex flex-col items-center text-center group transform md:-translate-y-4 shadow-2xl shadow-yellow-900/20">
+          {/* Box 2: Eel Ordering */}
+          <a 
+            href="https://forms.gle/AjnyUgcKQ6jjgDyL9" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="bg-zinc-900 p-8 rounded-lg border border-zinc-800 hover:border-yellow-500 transition-all duration-300 flex flex-col items-center text-center group cursor-pointer hover:bg-zinc-900/80 hover:-translate-y-2 shadow-lg hover:shadow-yellow-900/20"
+          >
             <div className="bg-zinc-800 p-4 rounded-full mb-6 group-hover:bg-yellow-500/20 transition-colors">
-              <Crown className="w-12 h-12 text-yellow-400" />
+              <UtensilsCrossed className="w-10 h-10 text-yellow-500" />
             </div>
-            <h4 className="text-white font-bold text-2xl uppercase mb-2">IFBB Pro Card</h4>
-            <p className="text-yellow-400 font-bold text-xl">Overall Champion</p>
-            <span className="mt-4 px-4 py-1 bg-yellow-500 text-black font-bold text-sm rounded-full">
-              2022 NPC Worldwide Taiwan
-            </span>
-            <p className="text-gray-400 mt-4 text-sm italic">Status: Active</p>
-          </div>
+            <h4 className="text-white font-bold text-xl uppercase mb-2 font-display">{t.box2.title}</h4>
+            <div className="flex items-center gap-2 text-yellow-500 font-medium text-lg">
+              <span>{t.box2.cta}</span>
+              <ExternalLink size={16} />
+            </div>
+            <p className="text-gray-400 mt-2 text-sm">{t.box2.sub}</p>
+          </a>
 
           {/* Box 3: Instagram */}
           <a 
@@ -53,12 +98,12 @@ export const ProQual: React.FC = () => {
             <div className="bg-zinc-800 p-4 rounded-full mb-6 group-hover:bg-yellow-500/20 transition-colors">
               <Instagram className="w-10 h-10 text-yellow-500" />
             </div>
-            <h4 className="text-white font-bold text-xl uppercase mb-2">INSTAGRAM</h4>
+            <h4 className="text-white font-bold text-xl uppercase mb-2 font-display">{t.box3.title}</h4>
             <div className="flex items-center gap-2 text-yellow-500 font-medium text-lg">
-              <span>@jasonhuang_ifbbpro</span>
+              <span>{t.box3.cta}</span>
               <ExternalLink size={16} />
             </div>
-            <p className="text-gray-400 mt-2 text-sm">Follow the Daily Process</p>
+            <p className="text-gray-400 mt-2 text-sm">{t.box3.sub}</p>
           </a>
         </div>
       </div>

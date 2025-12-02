@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Oswald:wght@300;400;500;700&family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Oswald:wght@300;400;500;700&family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
         theme: {
@@ -16,6 +16,7 @@
             fontFamily: {
               sans: ['Roboto', 'Noto Sans TC', 'sans-serif'],
               display: ['Oswald', 'Noto Sans TC', 'sans-serif'],
+              calligraphy: ['Yuji Syuku', 'serif'],
             },
             animation: {
               'fade-in-up': 'fadeInUp 1s ease-out forwards',
@@ -42,6 +43,9 @@
       h1, h2, h3, h4, h5, h6 {
         font-family: 'Oswald', 'Noto Sans TC', sans-serif;
       }
+      .font-calligraphy {
+        font-family: 'Yuji Syuku', serif;
+      }
     </style>
   <script type="importmap">
 {
@@ -57,5 +61,5 @@
 </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>  </body>
+  </body>
 </html>
