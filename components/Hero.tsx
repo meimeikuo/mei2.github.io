@@ -17,7 +17,7 @@ export const Hero: React.FC<LanguageProps> = ({ lang }) => {
       subQuote: "Representing Taiwan on the global stage."
     },
     cn: {
-      subtitle: "IFBB 古典健美職業選手",
+      subtitle: "IFBB 古典職業健美選手",
       line1: "新爺",
       line2: "裝逼",
       quote: "自律。美學。傳奇。",

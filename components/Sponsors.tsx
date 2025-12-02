@@ -54,7 +54,7 @@ export const Sponsors: React.FC<LanguageProps> = ({ lang }) => {
 
           {/* MyProtein */}
           <a 
-            href="https://www.instagram.com/myproteintw/" 
+            href="https://tidd.ly/4id1Klt" 
             target="_blank" 
             rel="noopener noreferrer"
             className="group bg-zinc-900 p-8 rounded-xl border border-zinc-800 hover:border-yellow-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-yellow-900/10 flex flex-col items-center text-center"
