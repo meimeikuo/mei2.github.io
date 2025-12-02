@@ -28,8 +28,8 @@ const App: React.FC = () => {
       </button>
 
       <Hero lang={lang} />
-      <ProQual lang={lang} />
       <History lang={lang} />
+      <ProQual lang={lang} />
       <Sponsors lang={lang} />
       <Footer lang={lang} />
     </div>
