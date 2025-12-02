@@ -37,7 +37,7 @@ export const Sponsors: React.FC<LanguageProps> = ({ lang }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {/* Classic Apparel */}
           <a 
-            href="https://www.instagram.com/classic__tw/" 
+            href="https://www.classictw.com.tw/" 
             target="_blank" 
             rel="noopener noreferrer"
             className="group bg-zinc-900 p-8 rounded-xl border border-zinc-800 hover:border-yellow-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-yellow-900/10 flex flex-col items-center text-center"
