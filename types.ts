@@ -10,6 +10,7 @@ export interface Competition {
   rank: string;
   medal?: 'gold' | 'silver' | 'bronze';
   link?: string;
+  details?: string;
 }
 
 export interface Achievement {

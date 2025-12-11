@@ -3,11 +3,24 @@ import { LanguageProps } from '../types';
 
 type AnimationPhase = 'typing1' | 'typing2' | 'waiting' | 'deleting2' | 'deleting1';
 
+const BG_IMAGES = [
+  "https://i.ibb.co/27KpSbD5/LINE-ALBUM-2025-251210-8.jpg",
+  "https://i.ibb.co/d0Lt0Nmt/LINE-ALBUM-2025-251210-1.jpg",
+  "https://i.ibb.co/4nvv349R/LINE-ALBUM-2025-251210-2.jpg",
+  "https://i.ibb.co/mFC2jwRj/LINE-ALBUM-2025-251210-3.jpg",
+  "https://i.ibb.co/VWjDkwrX/LINE-ALBUM-2025-251210-4.jpg",
+  "https://i.ibb.co/354QWp6g/LINE-ALBUM-2025-251210-5.jpg",
+  "https://i.ibb.co/8gZwnFN6/LINE-ALBUM-2025-251210-6.jpg",
+  "https://i.ibb.co/wtqfqq8/LINE-ALBUM-2025-251210-7.jpg",
+  "https://i.ibb.co/YBbQRDdJ/LINE-ALBUM-2025-251210-9.jpg"
+];
+
 export const Hero: React.FC<LanguageProps> = ({ lang }) => {
   const [line1, setLine1] = useState('');
   const [line2, setLine2] = useState('');
   const [phase, setPhase] = useState<AnimationPhase>('typing1');
   const [nameIndex, setNameIndex] = useState(0);
+  const [bgIndex, setBgIndex] = useState(0);
 
   // Content configuration
   const staticContent = {
@@ -37,6 +50,15 @@ export const Hero: React.FC<LanguageProps> = ({ lang }) => {
 
   const currentStatic = staticContent[lang];
   const targetName = names[lang][nameIndex];
+
+  // --- Background Slideshow Logic ---
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBgIndex((prev) => (prev + 1) % BG_IMAGES.length);
+    }, 3000); // 3 seconds per slide
+
+    return () => clearInterval(interval);
+  }, []);
 
   // --- 動畫核心邏輯 (已修正速度問題) ---
   useEffect(() => {
@@ -124,11 +146,17 @@ export const Hero: React.FC<LanguageProps> = ({ lang }) => {
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-10" />
         <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-transparent z-10" />
-        <img 
-          src="https://contests.npcnewsonline.com/images/contests/4367/large/21830560.jpg" 
-          alt="Jason Huang IFBB Pro" 
-          className="h-full w-full object-cover object-top opacity-80"
-        />
+        
+        {BG_IMAGES.map((src, index) => (
+          <img 
+            key={src}
+            src={src} 
+            alt={`Jason Huang Background ${index}`} 
+            className={`absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-1000 ease-in-out ${
+              index === bgIndex ? 'opacity-80' : 'opacity-0'
+            }`}
+          />
+        ))}
       </div>
 
       {/* Content */}

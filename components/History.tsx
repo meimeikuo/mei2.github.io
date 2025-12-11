@@ -7,6 +7,11 @@ export const History: React.FC<LanguageProps> = ({ lang }) => {
       title: "Pro Career",
       subtitle: "Stats",
       competitions: [
+        {
+          year: 2025,
+          name: "IFBB Asian Championship",
+          rank: "No. 4"
+        },
         { 
           year: 2025, 
           name: "Japan Pro Men's Classic Physique",
@@ -47,6 +52,11 @@ export const History: React.FC<LanguageProps> = ({ lang }) => {
       title: "職業生涯",
       subtitle: "戰績",
       competitions: [
+        {
+          year: 2025,
+          name: "IFBB 亞洲錦標賽",
+          rank: "No. 4"
+        },
         { 
           year: 2025, 
           name: "日本職業賽 男子古典健美",
@@ -106,16 +116,16 @@ export const History: React.FC<LanguageProps> = ({ lang }) => {
             } : {};
 
             return (
-              <div key={index} className="relative pl-8 md:pl-0 flex flex-col md:flex-row md:items-center group">
+              <div key={index} className="relative pl-8 md:pl-0 flex flex-col md:flex-row md:items-start group">
                 {/* Dot */}
-                <div className={`absolute -left-[9px] md:-left-[41px] w-4 h-4 rounded-full border-2 z-10 group-hover:scale-125 transition-transform ${
+                <div className={`absolute -left-[9px] md:-left-[41px] w-4 h-4 rounded-full border-2 top-2 md:top-8 z-10 group-hover:scale-125 transition-transform ${
                   comp.medal === 'gold' ? 'bg-yellow-500 border-yellow-500' :
                   comp.medal === 'bronze' ? 'bg-[#CD7F32] border-[#CD7F32]' : 
                   'bg-zinc-950 border-yellow-500'
                 }`} />
                 
                 {/* Year */}
-                <div className="md:w-32 mb-2 md:mb-0">
+                <div className="md:w-32 mb-2 md:mb-0 pt-1 md:pt-6">
                   <span className="text-2xl font-bold text-zinc-500 group-hover:text-white transition-colors font-display">{comp.year}</span>
                 </div>
 
@@ -127,20 +137,24 @@ export const History: React.FC<LanguageProps> = ({ lang }) => {
                         <h3 className={`text-xl text-white font-bold uppercase font-display ${comp.link ? 'underline decoration-yellow-500/50 underline-offset-4' : ''}`}>
                           {comp.name}
                         </h3>
-                        <div className={`px-4 py-1 rounded font-bold text-sm uppercase whitespace-nowrap font-sans ${
-                          comp.medal === 'gold'
-                            ? 'bg-yellow-500 text-black'
-                            : comp.medal === 'bronze' 
-                            ? 'bg-[#CD7F32] text-white' 
-                            : 'bg-zinc-800 text-yellow-500'
-                        }`}>
-                          {comp.rank}
+                        
+                        <div className="flex items-center gap-3">
+                          <div className={`px-4 py-1 rounded font-bold text-sm uppercase whitespace-nowrap font-sans ${
+                            comp.medal === 'gold'
+                              ? 'bg-yellow-500 text-black'
+                              : comp.medal === 'bronze' 
+                              ? 'bg-[#CD7F32] text-white' 
+                              : 'bg-zinc-800 text-yellow-500'
+                          }`}>
+                            {comp.rank}
+                          </div>
                         </div>
                       </div>
-                      {/* Optional details for the Pro Card entry */}
-                      {(comp as any).details && (
+
+                      {/* Optional details */}
+                      {comp.details && (
                         <p className="text-gray-400 text-sm mt-2 border-t border-zinc-800 pt-2">
-                          {(comp as any).details}
+                          {comp.details}
                         </p>
                       )}
                     </div>
