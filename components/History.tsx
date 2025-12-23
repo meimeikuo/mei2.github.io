@@ -9,6 +9,11 @@ export const History: React.FC<LanguageProps> = ({ lang }) => {
       competitions: [
         {
           year: 2025,
+          name: "IFBB Huanji China Pro",
+          rank: "No. 5"
+        },
+        {
+          year: 2025,
           name: "IFBB Asian Championship",
           rank: "No. 4"
         },
@@ -52,6 +57,11 @@ export const History: React.FC<LanguageProps> = ({ lang }) => {
       title: "職業生涯",
       subtitle: "戰績",
       competitions: [
+        {
+          year: 2025,
+          name: "IFBB 北京寰際職業賽",
+          rank: "No. 5"
+        },
         {
           year: 2025,
           name: "IFBB 亞洲錦標賽",

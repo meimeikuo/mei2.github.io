@@ -12,7 +12,10 @@ const BG_IMAGES = [
   "https://i.ibb.co/354QWp6g/LINE-ALBUM-2025-251210-5.jpg",
   "https://i.ibb.co/8gZwnFN6/LINE-ALBUM-2025-251210-6.jpg",
   "https://i.ibb.co/wtqfqq8/LINE-ALBUM-2025-251210-7.jpg",
-  "https://i.ibb.co/YBbQRDdJ/LINE-ALBUM-2025-251210-9.jpg"
+  "https://i.ibb.co/YBbQRDdJ/LINE-ALBUM-2025-251210-9.jpg",
+  "https://lh3.googleusercontent.com/pw/AP1GczPLdJHNa6h83EntmYan3Q2-3G7IBJDdPCHmPkORJfyVEtjzbQzarfMgrWz2OTBSMi3O2KhS42v1y_n-ihKkV8iMbQboW379yZeQVYB827o6T9pjSLA=w1800",
+  "https://lh3.googleusercontent.com/pw/AP1GczMoxHodg09o6FUmzNuuVdnMsZzrCGq-Rf_UtyuuCj6CpXY1DQNSdvC7RlwaNl7TXYgF3Zdyyru7KCU-nIY9jAGffjUyLTWA_20tVvHUpnJFmN9L_NQ=w1800",
+  "https://lh3.googleusercontent.com/pw/AP1GczPXUpuUQrDE3fqS7kRm-zSPuj1UTw5rOZaX3QYFLpLwArUlnyMCwK3NPulbi9fxGuyELhZXRDrsAZTIaZ4FQtzyWsUuJpyvtVRLiunsU4frHqwgvmo=w1800"
 ];
 
 export const Hero: React.FC<LanguageProps> = ({ lang }) => {

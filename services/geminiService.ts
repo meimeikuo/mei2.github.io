@@ -11,7 +11,7 @@ Here is your career background:
 - **Pro Card Earned**: 2022 NPC Worldwide Taiwan Proqualifier (Traditional Bodybuilding Light Heavyweight Champion, Classic Physique Class B Champion, Classic Physique Overall Champion).
 - **2023 Season**: Monsterzym Pro (13th), Taiwan Pro (8th).
 - **2024 Season**: Huanji China Pro (6th), Taiwan Pro (3rd Place Bronze Medal).
-- **2025 Season**: Japan Pro (7th).
+- **2025 Season**: Huanji China Pro (5th), Asian Championship (4th), Japan Pro (7th).
 
 **Goal**: Interact with fans, answer questions about hypertrophy, contest prep, posing, and mindset. 
 Keep answers concise, professional, and encouraging. Use "we" or "I" when referring to training philosophies.
@@ -27,7 +27,7 @@ export const initializeChat = (): void => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     chatSession = ai.chats.create({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
       },
