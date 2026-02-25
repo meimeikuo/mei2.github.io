@@ -1,12 +1,11 @@
 import React from 'react';
-import { Shirt, ShoppingBag, ExternalLink, TicketPercent, Pill, Zap } from 'lucide-react';
+import { ShoppingBag, ExternalLink, TicketPercent, Pill, Zap } from 'lucide-react';
 import { LanguageProps } from '../types';
 
 export const Sponsors: React.FC<LanguageProps> = ({ lang }) => {
   const content = {
     en: {
       title: "Official Partners",
-      apparel: "Fitness Apparel",
       whey: "Whey Protein",
       supplements: "Supplements",
       sportsSupps: "Sports Supplements",
@@ -17,7 +16,6 @@ export const Sponsors: React.FC<LanguageProps> = ({ lang }) => {
     },
     cn: {
       title: "合作廠商",
-      apparel: "健身服飾",
       whey: "乳清蛋白",
       supplements: "保健品",
       sportsSupps: "運動補給品",
@@ -37,25 +35,8 @@ export const Sponsors: React.FC<LanguageProps> = ({ lang }) => {
           <h3 className="text-3xl md:text-5xl font-black text-white uppercase font-display">{t.title}</h3>
         </div>
 
-        {/* Links Grid - Adjusted to 4 columns for desktop */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {/* Classic Apparel */}
-          <a 
-            href="https://www.classictw.com.tw/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="group bg-zinc-900 p-8 rounded-xl border border-zinc-800 hover:border-yellow-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-yellow-900/10 flex flex-col items-center text-center"
-          >
-            <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mb-6 group-hover:bg-yellow-500 text-yellow-500 group-hover:text-black transition-colors">
-              <Shirt size={32} />
-            </div>
-            <h4 className="text-xl font-black text-white uppercase mb-1 font-display">{t.apparel}</h4>
-            <div className="flex items-center gap-2 text-yellow-500 font-bold text-lg font-display">
-              <span>@classic__tw</span>
-              <ExternalLink size={16} />
-            </div>
-          </a>
-
+        {/* Links Grid - Adjusted to 3 columns for desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {/* MyProtein */}
           <a 
             href="https://tidd.ly/4id1Klt" 
