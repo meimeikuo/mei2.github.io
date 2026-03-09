@@ -1,5 +1,5 @@
 import React from 'react';
-import { UtensilsCrossed, Dumbbell, Instagram, ExternalLink } from 'lucide-react';
+import { UtensilsCrossed, Dumbbell, Instagram, ExternalLink, PlaySquare } from 'lucide-react';
 import { LanguageProps } from '../types';
 
 export const ProQual: React.FC<LanguageProps> = ({ lang }) => {
@@ -20,6 +20,11 @@ export const ProQual: React.FC<LanguageProps> = ({ lang }) => {
         title: "INSTAGRAM",
         cta: "@jasonhuang_ifbbpro",
         sub: "Follow the Daily Process"
+      },
+      box4: {
+        title: "DOUYIN",
+        cta: "傑森 黃文新IFBBPRO",
+        sub: "Short Videos & Updates"
       }
     },
     cn: {
@@ -38,6 +43,11 @@ export const ProQual: React.FC<LanguageProps> = ({ lang }) => {
         title: "INSTAGRAM",
         cta: "@jasonhuang_ifbbpro",
         sub: "追蹤日常訓練"
+      },
+      box4: {
+        title: "抖音",
+        cta: "傑森 黃文新IFBBPRO",
+        sub: "短影音與動態"
       }
     }
   };
@@ -51,7 +61,7 @@ export const ProQual: React.FC<LanguageProps> = ({ lang }) => {
           <h3 className="text-3xl md:text-5xl font-black text-white uppercase font-display">{t.title}</h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Box 1: Course Inquiry */}
           <a 
             href="https://forms.gle/ckanBAG2wGVjQ4FD6" 
@@ -104,6 +114,24 @@ export const ProQual: React.FC<LanguageProps> = ({ lang }) => {
               <ExternalLink size={16} />
             </div>
             <p className="text-gray-400 mt-2 text-sm">{t.box3.sub}</p>
+          </a>
+
+          {/* Box 4: Douyin */}
+          <a 
+            href="https://v.douyin.com/nnjXlvZahJw/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="bg-zinc-900 p-8 rounded-lg border border-zinc-800 hover:border-yellow-500 transition-all duration-300 flex flex-col items-center text-center group cursor-pointer hover:bg-zinc-900/80 hover:-translate-y-2 shadow-lg hover:shadow-yellow-900/20"
+          >
+            <div className="bg-zinc-800 p-4 rounded-full mb-6 group-hover:bg-yellow-500/20 transition-colors">
+              <PlaySquare className="w-10 h-10 text-yellow-500" />
+            </div>
+            <h4 className="text-white font-bold text-xl uppercase mb-2 font-display">{t.box4.title}</h4>
+            <div className="flex items-center gap-2 text-yellow-500 font-medium text-lg">
+              <span>{t.box4.cta}</span>
+              <ExternalLink size={16} />
+            </div>
+            <p className="text-gray-400 mt-2 text-sm">{t.box4.sub}</p>
           </a>
         </div>
       </div>

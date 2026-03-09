@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Hero } from './components/Hero';
 import { ProQual } from './components/ProQual';
+import { Sharpsword } from './components/Sharpsword';
 import { History } from './components/History';
 import { Sponsors } from './components/Sponsors';
 import { Footer } from './components/Footer';
@@ -30,6 +31,7 @@ const App: React.FC = () => {
       <Hero lang={lang} />
       <History lang={lang} />
       <ProQual lang={lang} />
+      <Sharpsword lang={lang} />
       <Sponsors lang={lang} />
       <Footer lang={lang} />
     </div>
