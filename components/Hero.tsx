@@ -139,7 +139,7 @@ export const Hero: React.FC<LanguageProps> = ({ lang }) => {
             key={src}
             src={src} 
             alt={`Jason Huang Background ${index}`} 
-            className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-1000 ease-in-out ${
+            className={`absolute inset-0 h-full w-full object-contain object-center transition-opacity duration-1000 ease-in-out ${
               index === bgIndex ? 'opacity-70' : 'opacity-0'
             }`}
           />

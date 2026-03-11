@@ -39,7 +39,7 @@ export const Sponsors: React.FC<LanguageProps> = ({ lang }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {/* MyProtein */}
           <a 
-            href="https://tidd.ly/4id1Klt" 
+            href="https://creatorlink.shop/4bAhKNj" 
             target="_blank" 
             rel="noopener noreferrer"
             className="group bg-zinc-900 p-8 rounded-xl border border-zinc-800 hover:border-yellow-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-yellow-900/10 flex flex-col items-center text-center"
