@@ -3,7 +3,7 @@ import { db, auth, loginWithEmail, logout, storage } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { Save, LogOut, Loader2, Image as ImageIcon, Plus, Trash2, Link, Dumbbell, UtensilsCrossed, Instagram, PlaySquare, ShoppingBag, ShoppingCart, Pill, Zap } from 'lucide-react';
+import { Save, LogOut, Loader2, Image as ImageIcon, Plus, Trash2, Link, Dumbbell, UtensilsCrossed, Instagram, PlaySquare, ShoppingBag, ShoppingCart, Pill, Zap, ArrowUp, ArrowDown, ArrowDownAZ } from 'lucide-react';
 import { defaultContent, migrateData, DynamicLink } from '../hooks/useSiteContent';
 
 const IconMap: Record<string, React.ElementType> = {
@@ -24,7 +24,7 @@ const ADMIN_EMAILS = [
   'jasmine.kuo@neurobraindynamics.com'
 ];
 
-type Tab = 'hero' | 'services' | 'others' | 'sponsors' | 'footer';
+type Tab = 'hero' | 'history' | 'services' | 'others' | 'sponsors' | 'footer';
 
 export const Admin: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -409,6 +409,252 @@ export const Admin: React.FC = () => {
     </div>
   );
 
+  const addCombinedCompetitionItem = () => {
+    const newCn = { id: `competitionsCn-${Date.now()}`, year: new Date().getFullYear(), name: '', rank: '' };
+    const newEn = { id: `competitionsEn-${Date.now()}`, year: new Date().getFullYear(), name: '', rank: '' };
+    setSiteData(prev => ({ 
+      ...prev, 
+      competitionsCn: [newCn, ...(prev.competitionsCn || [])],
+      competitionsEn: [newEn, ...(prev.competitionsEn || [])]
+    }));
+  };
+
+  const removeCombinedCompetitionItem = (index: number) => {
+    setSiteData(prev => {
+      const newCn = [...(prev.competitionsCn || [])];
+      newCn.splice(index, 1);
+      const newEn = [...(prev.competitionsEn || [])];
+      newEn.splice(index, 1);
+      return { ...prev, competitionsCn: newCn, competitionsEn: newEn };
+    });
+  };
+
+  const moveCombinedCompetitionItem = (index: number, direction: 'up' | 'down') => {
+    setSiteData(prev => {
+      const cnList = [...(prev.competitionsCn || [])];
+      const enList = [...(prev.competitionsEn || [])];
+      const length = Math.max(cnList.length, enList.length);
+
+      if (
+        (direction === 'up' && index === 0) || 
+        (direction === 'down' && index === length - 1)
+      ) {
+        return prev;
+      }
+      
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      
+      const tempCn = cnList[index];
+      cnList[index] = cnList[targetIndex];
+      cnList[targetIndex] = tempCn;
+      
+      const tempEn = enList[index];
+      enList[index] = enList[targetIndex];
+      enList[targetIndex] = tempEn;
+      
+      return { ...prev, competitionsCn: cnList, competitionsEn: enList };
+    });
+  };
+
+  const sortCompetitionsByYear = () => {
+    setSiteData(prev => {
+      const cnList = [...(prev.competitionsCn || [])];
+      const enList = [...(prev.competitionsEn || [])];
+      
+      const combined = cnList.map((cn, i) => ({ cn, en: enList[i] || { year: cn.year, name: '', rank: '' } }));
+      combined.sort((a, b) => b.cn.year - a.cn.year);
+      
+      return {
+        ...prev,
+        competitionsCn: combined.map(item => item.cn),
+        competitionsEn: combined.map(item => item.en)
+      };
+    });
+  };
+
+  const handleSharedChange = (index: number, field: string, value: any) => {
+    setSiteData(prev => {
+      const newCn = [...(prev.competitionsCn || [])];
+      if (newCn[index]) newCn[index] = { ...newCn[index], [field]: value };
+      const newEn = [...(prev.competitionsEn || [])];
+      if (newEn[index]) newEn[index] = { ...newEn[index], [field]: value };
+      return { ...prev, competitionsCn: newCn, competitionsEn: newEn };
+    });
+  };
+
+  const CombinedCompetitionEditor = () => {
+    const cnList = siteData.competitionsCn || [];
+    const enList = siteData.competitionsEn || [];
+    const length = Math.max(cnList.length, enList.length);
+
+    return (
+      <div className="animate-fade-in-up mt-8">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-bold text-white border-l-4 border-yellow-500 pl-3">戰績列表</h3>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={sortCompetitionsByYear}
+              className="bg-zinc-800 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-zinc-700 transition-colors"
+            >
+              <ArrowDownAZ size={16} /> 依年份排序
+            </button>
+            <button 
+              onClick={addCombinedCompetitionItem}
+              className="bg-yellow-500 text-black px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-yellow-400 transition-colors"
+            >
+              <Plus size={16} /> 新增戰績
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-8">
+          {Array.from({ length }).map((_, index) => {
+            const cnItem = cnList[index] || { year: new Date().getFullYear(), name: '', rank: '' };
+            const enItem = enList[index] || { year: cnItem.year, name: '', rank: '' };
+            
+            return (
+              <div key={cnItem.id || index} className="bg-zinc-950 p-6 rounded-xl border border-zinc-800 relative">
+                <div className="absolute top-4 right-4 flex items-center gap-2">
+                  <button 
+                    onClick={() => moveCombinedCompetitionItem(index, 'up')}
+                    disabled={index === 0}
+                    className={`text-zinc-500 hover:text-yellow-500 transition-colors ${index === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    title="上移"
+                  >
+                    <ArrowUp size={20} />
+                  </button>
+                  <button 
+                    onClick={() => moveCombinedCompetitionItem(index, 'down')}
+                    disabled={index === length - 1}
+                    className={`text-zinc-500 hover:text-yellow-500 transition-colors ${index === length - 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    title="下移"
+                  >
+                    <ArrowDown size={20} />
+                  </button>
+                  <div className="w-px h-4 bg-zinc-700 mx-1"></div>
+                  <button 
+                    onClick={() => removeCombinedCompetitionItem(index)}
+                    className="text-zinc-500 hover:text-red-400 transition-colors"
+                    title="刪除"
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                </div>
+                
+                <div className="space-y-6">
+                  {/* 1. 比賽名稱 */}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-2 flex items-center gap-2">
+                        <span className="bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded text-xs">中</span>
+                        1. 比賽名稱 (Name)
+                      </label>
+                      <input 
+                        type="text" 
+                        value={cnItem.name} 
+                        onChange={(e) => handleListItemChange('competitionsCn', index, 'name', e.target.value)}
+                        className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-2 flex items-center gap-2">
+                        <span className="bg-blue-400/20 text-blue-400 px-2 py-1 rounded text-xs">EN</span>
+                        1. Competition Name
+                      </label>
+                      <input 
+                        type="text" 
+                        value={enItem.name} 
+                        onChange={(e) => handleListItemChange('competitionsEn', index, 'name', e.target.value)}
+                        className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 2. 描述 */}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-2 flex items-center gap-2">
+                        <span className="bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded text-xs">中</span>
+                        2. 描述 (Details)
+                      </label>
+                      <input 
+                        type="text" 
+                        value={cnItem.details || ''} 
+                        onChange={(e) => handleListItemChange('competitionsCn', index, 'details', e.target.value)}
+                        className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-2 flex items-center gap-2">
+                        <span className="bg-blue-400/20 text-blue-400 px-2 py-1 rounded text-xs">EN</span>
+                        2. Details
+                      </label>
+                      <input 
+                        type="text" 
+                        value={enItem.details || ''} 
+                        onChange={(e) => handleListItemChange('competitionsEn', index, 'details', e.target.value)}
+                        className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 3-6. 共享欄位 */}
+                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 pt-6 border-t border-zinc-800">
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-2">3. 年份 (Year)</label>
+                      <input 
+                        type="number" 
+                        value={cnItem.year} 
+                        onChange={(e) => handleSharedChange(index, 'year', e.target.value)}
+                        className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-2">4. 名次 (Rank)</label>
+                      <input 
+                        type="text" 
+                        value={cnItem.rank} 
+                        onChange={(e) => handleSharedChange(index, 'rank', e.target.value)}
+                        className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-2">5. 獎牌 (Medal)</label>
+                      <select
+                        value={cnItem.medal || ''}
+                        onChange={(e) => handleSharedChange(index, 'medal', e.target.value)}
+                        className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none"
+                      >
+                        <option value="">無</option>
+                        <option value="gold">金牌 (Gold)</option>
+                        <option value="silver">銀牌 (Silver)</option>
+                        <option value="bronze">銅牌 (Bronze)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-2">6. 網址 (Link)</label>
+                      <input 
+                        type="text" 
+                        value={cnItem.link || ''} 
+                        onChange={(e) => handleSharedChange(index, 'link', e.target.value)}
+                        className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {length === 0 && (
+            <div className="text-center py-10 text-zinc-500 border border-dashed border-zinc-800 rounded-xl">
+              目前沒有項目，請點擊上方按鈕新增。
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-4 md:p-8">
       <div className="max-w-5xl mx-auto">
@@ -427,6 +673,7 @@ export const Admin: React.FC = () => {
           <div className="w-full md:w-64 flex flex-row md:flex-col gap-2 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
             {[
               { id: 'hero', name: '首頁輪播區 (Hero)' },
+              { id: 'history', name: '職業生涯戰績 (Career)' },
               { id: 'services', name: '服務與社群 (Services)' },
               { id: 'others', name: '其他 (Others)' },
               { id: 'sponsors', name: '合作廠商 (Sponsors)' },
@@ -512,6 +759,13 @@ export const Admin: React.FC = () => {
                     ))}
                   </div>
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'history' && (
+              <div className="animate-fade-in-up">
+                <h2 className="text-2xl font-bold mb-6 text-white border-l-4 border-yellow-500 pl-3">職業生涯戰績 (Career)</h2>
+                <CombinedCompetitionEditor />
               </div>
             )}
 

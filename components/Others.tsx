@@ -34,12 +34,8 @@ export const Others: React.FC<LanguageProps> = ({ lang }) => {
   return (
     <section className="bg-zinc-950 py-20 px-6 border-t border-zinc-900">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
-          <h3 className="text-3xl md:text-5xl font-black text-white uppercase font-display">{t.title}</h3>
-        </div>
-
         {others.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className={`grid gap-8 ${others.length === 1 ? 'grid-cols-1 max-w-3xl mx-auto' : 'grid-cols-1 md:grid-cols-2'}`}>
             {others.map((item: DynamicLink) => {
               const IconComponent = IconMap[item.iconName || ''] || Link;
               return (
@@ -55,7 +51,7 @@ export const Others: React.FC<LanguageProps> = ({ lang }) => {
                       <img 
                         src={item.imageUrl}
                         alt={item.title}
-                        className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500 group-hover:scale-105 transform"
+                        className="absolute inset-0 w-full h-full object-contain opacity-80 group-hover:opacity-100 transition-opacity duration-500 group-hover:scale-105 transform"
                         referrerPolicy="no-referrer"
                       />
                     ) : (

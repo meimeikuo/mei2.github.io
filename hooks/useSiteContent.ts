@@ -2,6 +2,16 @@ import { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 
+export interface Competition {
+  id: string;
+  year: number;
+  name: string;
+  rank: string;
+  medal?: 'gold' | 'silver' | 'bronze';
+  details?: string;
+  link?: string;
+}
+
 export interface DynamicLink {
   id: string;
   title: string;
@@ -33,6 +43,26 @@ export const defaultContent = {
     "https://i.ibb.co/wtqfqq8/LINE-ALBUM-2025-251210-7.jpg",
     "https://i.ibb.co/YBbQRDdJ/LINE-ALBUM-2025-251210-9.jpg"
   ],
+  competitionsEn: [
+    { id: 'comp-en-1', year: 2025, name: "IFBB Huanji China Pro", rank: "No. 5" },
+    { id: 'comp-en-2', year: 2025, name: "IFBB Asian Championship", rank: "No. 4" },
+    { id: 'comp-en-3', year: 2025, name: "Japan Pro Men's Classic Physique", rank: "No. 7", link: "https://www.ifbbpro.com/competition/2025-japan-pro/" },
+    { id: 'comp-en-4', year: 2024, name: "IFBB Taiwan Pro", rank: "No. 3", medal: 'bronze' as const },
+    { id: 'comp-en-5', year: 2024, name: "IFBB Huanji China Pro", rank: "No. 6" },
+    { id: 'comp-en-6', year: 2023, name: "IFBB Pro League District of Taiwan Pro CP", rank: "No. 8" },
+    { id: 'comp-en-7', year: 2023, name: "IFBB Monsterzym Pro Classic Physique", rank: "No. 13" },
+    { id: 'comp-en-8', year: 2022, name: "NPC Worldwide Taiwan Proqualifier", rank: "Overall Champion / Pro Card Earned", medal: 'gold' as const, details: "Traditional BB Light Heavyweight Champion, Classic Physique Class B Champion" }
+  ] as Competition[],
+  competitionsCn: [
+    { id: 'comp-cn-1', year: 2025, name: "IFBB 北京寰際職業賽", rank: "No. 5" },
+    { id: 'comp-cn-2', year: 2025, name: "IFBB 亞洲錦標賽", rank: "No. 4" },
+    { id: 'comp-cn-3', year: 2025, name: "日本職業賽 男子古典健美", rank: "No. 7", link: "https://www.ifbbpro.com/competition/2025-japan-pro/" },
+    { id: 'comp-cn-4', year: 2024, name: "IFBB 台灣職業賽", rank: "No. 3 銅牌", medal: 'bronze' as const },
+    { id: 'comp-cn-5', year: 2024, name: "IFBB 北京寰際古典職業賽", rank: "No. 6" },
+    { id: 'comp-cn-6', year: 2023, name: "IFBB 台灣職業賽", rank: "No. 8" },
+    { id: 'comp-cn-7', year: 2023, name: "IFBB Monsterzym 職業賽", rank: "No. 13" },
+    { id: 'comp-cn-8', year: 2022, name: "NPC Worldwide 台灣職業卡資格賽", rank: "全場總冠軍 / 取得職業卡", medal: 'gold' as const, details: "傳統健美輕重量級冠軍、古典健美B組冠軍、古典健美全場總冠軍" }
+  ] as Competition[],
   servicesList: [
     { id: 'srv1', title: '課程諮詢', description: '客製化訓練安排', linkText: '立即開始', iconName: 'Dumbbell', imageUrl: '', url: "https://forms.gle/ckanBAG2wGVjQ4FD6" },
     { id: 'srv2', title: '鰻魚訂購', description: '頂級白燒鰻', linkText: '立即訂購', iconName: 'UtensilsCrossed', imageUrl: '', url: "https://forms.gle/AjnyUgcKQ6jjgDyL9" },

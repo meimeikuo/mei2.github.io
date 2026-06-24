@@ -1,107 +1,19 @@
 import React from 'react';
 import { LanguageProps } from '../types';
+import { useSiteContent, Competition } from '../hooks/useSiteContent';
 
 export const History: React.FC<LanguageProps> = ({ lang }) => {
+  const { content: siteContent } = useSiteContent();
   const content = {
     en: {
       title: "Pro Career",
       subtitle: "Stats",
-      competitions: [
-        {
-          year: 2025,
-          name: "IFBB Huanji China Pro",
-          rank: "No. 5"
-        },
-        {
-          year: 2025,
-          name: "IFBB Asian Championship",
-          rank: "No. 4"
-        },
-        { 
-          year: 2025, 
-          name: "Japan Pro Men's Classic Physique",
-          rank: "No. 7",
-          link: "https://www.ifbbpro.com/competition/2025-japan-pro/"
-        },
-        { 
-          year: 2024, 
-          name: "IFBB Taiwan Pro", 
-          rank: "No. 3", 
-          medal: 'bronze' as const
-        },
-        { 
-          year: 2024, 
-          name: "IFBB Huanji China Pro", 
-          rank: "No. 6" 
-        },
-        { 
-          year: 2023, 
-          name: "IFBB Pro League District of Taiwan Pro CP", 
-          rank: "No. 8" 
-        },
-        { 
-          year: 2023, 
-          name: "IFBB Monsterzym Pro Classic Physique", 
-          rank: "No. 13" 
-        },
-        {
-          year: 2022,
-          name: "NPC Worldwide Taiwan Proqualifier",
-          rank: "Overall Champion / Pro Card Earned",
-          medal: 'gold' as const,
-          details: "Traditional BB Light Heavyweight Champion, Classic Physique Class B Champion"
-        }
-      ]
+      competitions: siteContent.competitionsEn || []
     },
     cn: {
       title: "職業生涯",
       subtitle: "戰績",
-      competitions: [
-        {
-          year: 2025,
-          name: "IFBB 北京寰際職業賽",
-          rank: "No. 5"
-        },
-        {
-          year: 2025,
-          name: "IFBB 亞洲錦標賽",
-          rank: "No. 4"
-        },
-        { 
-          year: 2025, 
-          name: "日本職業賽 男子古典健美",
-          rank: "No. 7",
-          link: "https://www.ifbbpro.com/competition/2025-japan-pro/"
-        },
-        { 
-          year: 2024, 
-          name: "IFBB 台灣職業賽", 
-          rank: "No. 3 銅牌", 
-          medal: 'bronze' as const
-        },
-        { 
-          year: 2024, 
-          name: "IFBB 北京寰際古典職業賽", 
-          rank: "No. 6" 
-        },
-        { 
-          year: 2023, 
-          name: "IFBB 台灣職業賽", 
-          rank: "No. 8" 
-        },
-        { 
-          year: 2023, 
-          name: "IFBB Monsterzym 職業賽", 
-          rank: "No. 13" 
-        },
-        {
-          year: 2022,
-          name: "NPC Worldwide 台灣職業卡資格賽",
-          rank: "全場總冠軍 / 取得職業卡",
-          medal: 'gold' as const,
-          details: "傳統健美輕重量級冠軍、古典健美B組冠軍、古典健美全場總冠軍"
-        }
-      ]
+      competitions: siteContent.competitionsCn || []
     }
   };
 
@@ -115,7 +27,9 @@ export const History: React.FC<LanguageProps> = ({ lang }) => {
         </h2>
 
         <div className="relative border-l-2 border-zinc-800 ml-4 md:ml-0 md:pl-8 space-y-12">
-          {t.competitions.map((comp, index) => {
+          {[...t.competitions]
+            .sort((a, b) => b.year - a.year)
+            .map((comp: Competition, index: number) => {
             // Determine if it's a link or div
             const Wrapper = comp.link ? 'a' : 'div';
             const wrapperProps = comp.link ? {
