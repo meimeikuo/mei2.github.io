@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Hero } from './components/Hero';
 import { ProQual } from './components/ProQual';
-import { Sharpsword } from './components/Sharpsword';
+import { Others } from './components/Others';
 import { History } from './components/History';
 import { Sponsors } from './components/Sponsors';
 import { Footer } from './components/Footer';
+import { Admin } from './components/Admin';
 import { Globe } from 'lucide-react';
 import { Language } from './types';
 
-const App: React.FC = () => {
+const MainSite: React.FC = () => {
   const [lang, setLang] = useState<Language>('cn');
 
   const toggleLanguage = () => {
@@ -31,10 +33,21 @@ const App: React.FC = () => {
       <Hero lang={lang} />
       <History lang={lang} />
       <ProQual lang={lang} />
-      <Sharpsword lang={lang} />
+      <Others lang={lang} />
       <Sponsors lang={lang} />
       <Footer lang={lang} />
     </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<MainSite />} />
+        <Route path="/admin" element={<Admin />} />
+      </Routes>
+    </Router>
   );
 };
 

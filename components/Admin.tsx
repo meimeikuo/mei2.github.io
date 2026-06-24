@@ -1,0 +1,571 @@
+import React, { useState, useEffect } from 'react';
+import { db, auth, loginWithEmail, logout, storage } from '../firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { Save, LogOut, Loader2, Image as ImageIcon, Plus, Trash2, Link, Dumbbell, UtensilsCrossed, Instagram, PlaySquare, ShoppingBag, ShoppingCart, Pill, Zap } from 'lucide-react';
+import { defaultContent, migrateData, DynamicLink } from '../hooks/useSiteContent';
+
+const IconMap: Record<string, React.ElementType> = {
+  Link,
+  Dumbbell,
+  UtensilsCrossed,
+  Instagram,
+  PlaySquare,
+  ShoppingBag,
+  ShoppingCart,
+  Pill,
+  Zap
+};
+
+const ADMIN_EMAILS = [
+  'jas60523@gmail.com', 
+  'yoshiki840417@gmail.com',
+  'jasmine.kuo@neurobraindynamics.com'
+];
+
+type Tab = 'hero' | 'services' | 'others' | 'sponsors' | 'footer';
+
+export const Admin: React.FC = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [siteData, setSiteData] = useState<any>(defaultContent);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [activeTab, setActiveTab] = useState<Tab>('hero');
+  const [uploadingImage, setUploadingImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser && currentUser.email && !ADMIN_EMAILS.includes(currentUser.email)) {
+        logout();
+        setLoginError("您沒有管理員權限");
+        setUser(null);
+      } else {
+        setUser(currentUser);
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (user && db) {
+      fetchData();
+    }
+  }, [user]);
+
+  const fetchData = async () => {
+    if (!db) return;
+    try {
+      const docRef = doc(db, 'site', 'content');
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setSiteData(migrateData(docSnap.data()));
+      } else {
+        setSiteData(migrateData({}));
+      }
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    if (!db) {
+      alert("Firebase 未設定");
+      setSaving(false);
+      return;
+    }
+    try {
+      const docRef = doc(db, 'site', 'content');
+      await setDoc(docRef, siteData, { merge: true });
+      alert("儲存成功！網頁已自動更新。");
+    } catch (error) {
+      console.error("Error saving data: ", error);
+      alert("儲存失敗，請確認您是否有編輯權限。");
+    }
+    setSaving(false);
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setLoading(true);
+    try {
+      const userCredential = await loginWithEmail(email, password);
+      if (!userCredential.user.email || !ADMIN_EMAILS.includes(userCredential.user.email)) {
+        await logout();
+        setLoginError("您沒有管理員權限");
+      }
+    } catch (error: any) {
+      setLoginError("登入失敗，請確認信箱與密碼是否正確。");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setSiteData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string, isArray: boolean = false, arrayIndex?: number) => {
+    if (!e.target.files || e.target.files.length === 0 || !storage) return;
+    const file = e.target.files[0];
+    
+    setUploadingImage(isArray ? `${fieldName}-${arrayIndex}` : fieldName);
+    
+    try {
+      const fileRef = ref(storage, `images/${Date.now()}_${file.name}`);
+      await uploadBytes(fileRef, file);
+      const url = await getDownloadURL(fileRef);
+      
+      if (isArray && typeof arrayIndex === 'number') {
+        const newImages = [...siteData[fieldName]];
+        newImages[arrayIndex] = url;
+        setSiteData(prev => ({ ...prev, [fieldName]: newImages }));
+      } else if (isArray) {
+        // Appending to array
+        setSiteData(prev => ({ ...prev, [fieldName]: [...prev[fieldName], url] }));
+      } else {
+        setSiteData(prev => ({ ...prev, [fieldName]: url }));
+      }
+    } catch (err) {
+      console.error("Upload error", err);
+      alert("上傳圖片失敗！請確認 Firebase Storage 是否已開通且設定好權限 (Rules)。若尚未設定，您可以直接貼上網址。");
+    }
+    
+    setUploadingImage(null);
+  };
+
+  const handleListImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, listName: string, index: number) => {
+    if (!e.target.files || e.target.files.length === 0 || !storage) return;
+    const file = e.target.files[0];
+    
+    setUploadingImage(`${listName}-${index}`);
+    
+    try {
+      const fileRef = ref(storage, `images/${Date.now()}_${file.name}`);
+      await uploadBytes(fileRef, file);
+      const url = await getDownloadURL(fileRef);
+      
+      const newList = [...siteData[listName]];
+      newList[index].imageUrl = url;
+      setSiteData(prev => ({ ...prev, [listName]: newList }));
+    } catch (err) {
+      console.error("Upload error", err);
+      alert("上傳圖片失敗！");
+    }
+    
+    setUploadingImage(null);
+  };
+
+  const addListItem = (listName: string) => {
+    const newItem: DynamicLink = { id: `${listName}-${Date.now()}`, title: '', imageUrl: '', url: '' };
+    setSiteData(prev => ({ ...prev, [listName]: [...(prev[listName] || []), newItem] }));
+  };
+
+  const removeListItem = (listName: string, index: number) => {
+    const newList = [...(siteData[listName] || [])];
+    newList.splice(index, 1);
+    setSiteData(prev => ({ ...prev, [listName]: newList }));
+  };
+
+  const handleListItemChange = (listName: string, index: number, field: keyof DynamicLink, value: string) => {
+    const newList = [...(siteData[listName] || [])];
+    newList[index] = { ...newList[index], [field]: value };
+    setSiteData(prev => ({ ...prev, [listName]: newList }));
+  };
+
+  const removeHeroImage = (index: number) => {
+    const newImages = [...siteData.heroBgImages];
+    newImages.splice(index, 1);
+    setSiteData(prev => ({ ...prev, heroBgImages: newImages }));
+  };
+
+  if (loading) {
+    return <div className="min-h-screen bg-black flex items-center justify-center text-white"><Loader2 className="animate-spin" /></div>;
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6">
+        <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 w-full max-w-md shadow-2xl">
+          <h1 className="text-3xl font-bold mb-8 text-center text-yellow-500">網站後台登入</h1>
+          
+          {loginError && (
+            <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-lg mb-6 text-sm text-center">
+              {loginError}
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="flex flex-col gap-5">
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-2">電子信箱</label>
+              <input 
+                type="email" 
+                value={email} 
+                onChange={e => setEmail(e.target.value)} 
+                required 
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none transition-colors" 
+                placeholder="admin@example.com" 
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-2">密碼</label>
+              <input 
+                type="password" 
+                value={password} 
+                onChange={e => setPassword(e.target.value)} 
+                required 
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none transition-colors" 
+                placeholder="••••••••" 
+              />
+            </div>
+            <button 
+              type="submit" 
+              disabled={loading} 
+              className="w-full bg-yellow-500 text-black px-6 py-3 rounded-xl font-bold hover:bg-yellow-400 transition-colors mt-4 flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              登入管理員帳號
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  const InputField = ({ label, name, isTextarea = false }: { label: string, name: string, isTextarea?: boolean }) => (
+    <div className="mb-6">
+      <label className="block text-sm font-medium text-zinc-400 mb-2">{label}</label>
+      {isTextarea ? (
+        <textarea name={name} value={siteData[name] || ''} onChange={handleChange} rows={3} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none" />
+      ) : (
+        <input type="text" name={name} value={siteData[name] || ''} onChange={handleChange} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none" />
+      )}
+    </div>
+  );
+
+  const ImageField = ({ label, name }: { label: string, name: string }) => (
+    <div className="mb-6">
+      <label className="block text-sm font-medium text-zinc-400 mb-2">{label}</label>
+      <div className="flex gap-4 items-start">
+        <div className="flex-1">
+          <input type="text" name={name} value={siteData[name] || ''} onChange={handleChange} placeholder="輸入圖片 URL..." className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none mb-2" />
+          <label className="cursor-pointer bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2 transition-colors">
+            {uploadingImage === name ? <Loader2 className="animate-spin" size={16} /> : <ImageIcon size={16} />}
+            {uploadingImage === name ? '上傳中...' : '從電腦上傳圖片'}
+            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, name)} disabled={!!uploadingImage} />
+          </label>
+        </div>
+        {siteData[name] && (
+          <div className="w-32 h-32 bg-zinc-800 rounded-lg overflow-hidden border border-zinc-700 flex-shrink-0">
+            <img src={siteData[name]} alt="Preview" className="w-full h-full object-cover" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const ICON_OPTIONS = [
+    { value: 'Link', label: '連結 (Link)' },
+    { value: 'Dumbbell', label: '啞鈴 (Dumbbell)' },
+    { value: 'UtensilsCrossed', label: '餐具 (UtensilsCrossed)' },
+    { value: 'Instagram', label: 'Instagram' },
+    { value: 'PlaySquare', label: '播放 (PlaySquare)' },
+    { value: 'ShoppingBag', label: '購物袋 (ShoppingBag)' },
+    { value: 'ShoppingCart', label: '購物車 (ShoppingCart)' },
+    { value: 'Pill', label: '藥丸/保健品 (Pill)' },
+    { value: 'Zap', label: '閃電/能量 (Zap)' },
+  ];
+
+  const DynamicListEditor = ({ title, listName }: { title: string, listName: string }) => (
+    <div className="animate-fade-in-up">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-white border-l-4 border-yellow-500 pl-3">{title}</h2>
+        <button 
+          onClick={() => addListItem(listName)}
+          className="bg-yellow-500 text-black px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-yellow-400 transition-colors"
+        >
+          <Plus size={16} /> 新增項目
+        </button>
+      </div>
+
+      <div className="space-y-6">
+        {(siteData[listName] || []).map((item: DynamicLink, index: number) => (
+          <div key={item.id} className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 relative">
+            <button 
+              onClick={() => removeListItem(listName, index)}
+              className="absolute top-4 right-4 text-zinc-500 hover:text-red-400 transition-colors"
+              title="刪除"
+            >
+              <Trash2 size={20} />
+            </button>
+            
+            <div className="grid md:grid-cols-2 gap-4 mt-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-2">標題 (Title)</label>
+                <input 
+                  type="text" 
+                  value={item.title} 
+                  onChange={(e) => handleListItemChange(listName, index, 'title', e.target.value)}
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-2">網址 (URL)</label>
+                <input 
+                  type="text" 
+                  value={item.url} 
+                  onChange={(e) => handleListItemChange(listName, index, 'url', e.target.value)}
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-2">副標題/說明 (Description)</label>
+                <input 
+                  type="text" 
+                  value={item.description || ''} 
+                  onChange={(e) => handleListItemChange(listName, index, 'description', e.target.value)}
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-2">按鈕/連結文字 (Link Text)</label>
+                <input 
+                  type="text" 
+                  value={item.linkText || ''} 
+                  onChange={(e) => handleListItemChange(listName, index, 'linkText', e.target.value)}
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-2">選擇圖標 (Icon)</label>
+                <div className="grid grid-cols-5 gap-2">
+                  {ICON_OPTIONS.map(opt => {
+                    const IconComponent = IconMap[opt.value] || Link;
+                    const isSelected = (item.iconName || 'Link') === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        title={opt.label}
+                        onClick={() => handleListItemChange(listName, index, 'iconName', opt.value)}
+                        className={`flex items-center justify-center p-3 rounded-lg border transition-all ${
+                          isSelected 
+                            ? 'bg-yellow-500/20 border-yellow-500 text-yellow-500' 
+                            : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:border-zinc-500 hover:text-white'
+                        }`}
+                      >
+                        <IconComponent size={20} />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-2">或輸入圖片 URL (會優先顯示)</label>
+                <div className="flex gap-4 items-start">
+                  <div className="flex-1">
+                    <input 
+                      type="text" 
+                      value={item.imageUrl} 
+                      onChange={(e) => handleListItemChange(listName, index, 'imageUrl', e.target.value)}
+                      placeholder="圖片 URL..." 
+                      className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none mb-2" 
+                    />
+                    <label className="cursor-pointer bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2 transition-colors">
+                      {uploadingImage === `${listName}-${index}` ? <Loader2 className="animate-spin" size={16} /> : <ImageIcon size={16} />}
+                      {uploadingImage === `${listName}-${index}` ? '上傳中...' : '從電腦上傳'}
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleListImageUpload(e, listName, index)} disabled={!!uploadingImage} />
+                    </label>
+                  </div>
+                  {item.imageUrl && (
+                    <div className="w-16 h-16 bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800 flex-shrink-0 flex items-center justify-center">
+                      <img src={item.imageUrl} alt="預覽" className="max-w-full max-h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+        {(!siteData[listName] || siteData[listName].length === 0) && (
+          <div className="text-center py-10 text-zinc-500 border border-dashed border-zinc-800 rounded-xl">
+            目前沒有項目，請點擊上方按鈕新增。
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-zinc-950 text-white p-4 md:p-8">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-zinc-800 pb-6 gap-4">
+          <h1 className="text-3xl font-bold text-yellow-500">管理後台 (CMS)</h1>
+          <div className="flex items-center gap-4 bg-zinc-900 py-2 px-4 rounded-full border border-zinc-800">
+            <span className="text-zinc-400 text-sm hidden sm:inline">{user.email}</span>
+            <button onClick={logout} className="flex items-center gap-2 text-red-400 hover:text-red-300 font-medium">
+              <LogOut size={16} /> 登出
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Sidebar Tabs */}
+          <div className="w-full md:w-64 flex flex-row md:flex-col gap-2 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
+            {[
+              { id: 'hero', name: '首頁輪播區 (Hero)' },
+              { id: 'services', name: '服務與社群 (Services)' },
+              { id: 'others', name: '其他 (Others)' },
+              { id: 'sponsors', name: '合作廠商 (Sponsors)' },
+              { id: 'footer', name: '頁尾設定 (Footer)' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as Tab)}
+                className={`text-left px-5 py-3 rounded-xl font-medium whitespace-nowrap transition-colors ${
+                  activeTab === tab.id 
+                    ? 'bg-yellow-500 text-black shadow-lg shadow-yellow-500/20' 
+                    : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white border border-zinc-800'
+                }`}
+              >
+                {tab.name}
+              </button>
+            ))}
+          </div>
+
+          {/* Content Area */}
+          <div className="flex-1 bg-zinc-900 rounded-2xl p-6 md:p-8 border border-zinc-800">
+            {activeTab === 'hero' && (
+              <div className="animate-fade-in-up">
+                <h2 className="text-2xl font-bold mb-6 text-white border-l-4 border-yellow-500 pl-3">首頁區塊設定</h2>
+                
+                <div className="grid md:grid-cols-2 gap-x-6">
+                  <div className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 mb-6">
+                    <h3 className="text-yellow-500 font-bold mb-4">中文設定</h3>
+                    <InputField label="副標題" name="heroTitleCn" />
+                    <InputField label="引言 (第一行)" name="heroQuoteCn" />
+                    <InputField label="引言 (第二行)" name="heroSubquoteCn" />
+                  </div>
+                  
+                  <div className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 mb-6">
+                    <h3 className="text-yellow-500 font-bold mb-4">英文設定</h3>
+                    <InputField label="Subtitle" name="heroTitleEn" />
+                    <InputField label="Quote (Line 1)" name="heroQuoteEn" />
+                    <InputField label="Quote (Line 2)" name="heroSubquoteEn" />
+                  </div>
+                </div>
+
+                <div className="bg-zinc-950 p-5 rounded-xl border border-zinc-800">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-yellow-500 font-bold">背景輪播圖片</h3>
+                    <label className="cursor-pointer bg-yellow-500 hover:bg-yellow-400 text-black px-4 py-2 rounded-lg text-sm font-bold inline-flex items-center gap-2 transition-colors">
+                      {uploadingImage === 'heroBgImages' ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
+                      新增圖片
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'heroBgImages', true)} disabled={!!uploadingImage} />
+                    </label>
+                  </div>
+                  
+                  <p className="text-zinc-500 text-sm mb-4">可以上傳多張圖片，系統會自動在首頁進行輪播。也可以直接填入圖片網址。</p>
+
+                  <div className="space-y-4">
+                    {siteData.heroBgImages && siteData.heroBgImages.map((img: string, index: number) => (
+                      <div key={index} className="flex gap-4 items-start p-4 bg-zinc-900 rounded-lg border border-zinc-800">
+                        <div className="w-24 h-24 bg-black rounded flex-shrink-0 border border-zinc-700 overflow-hidden">
+                          <img src={img} alt={`BG ${index}`} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1">
+                          <input 
+                            type="text" 
+                            value={img} 
+                            onChange={(e) => {
+                              const newImages = [...siteData.heroBgImages];
+                              newImages[index] = e.target.value;
+                              setSiteData(prev => ({ ...prev, heroBgImages: newImages }));
+                            }}
+                            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-white focus:border-yellow-500 outline-none text-sm mb-2" 
+                          />
+                          <div className="flex gap-2">
+                            <label className="cursor-pointer bg-zinc-700 hover:bg-zinc-600 text-white px-3 py-1.5 rounded text-xs inline-flex items-center gap-1 transition-colors">
+                              {uploadingImage === `heroBgImages-${index}` ? <Loader2 className="animate-spin" size={14} /> : <ImageIcon size={14} />}
+                              替換圖片
+                              <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'heroBgImages', true, index)} disabled={!!uploadingImage} />
+                            </label>
+                            <button onClick={() => removeHeroImage(index)} className="bg-red-500/20 text-red-400 hover:bg-red-500/30 hover:text-red-300 px-3 py-1.5 rounded text-xs inline-flex items-center gap-1 transition-colors">
+                              <Trash2 size={14} /> 刪除
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'services' && (
+              <DynamicListEditor title="服務與社群連結 (Services)" listName="servicesList" />
+            )}
+
+            {activeTab === 'others' && (
+              <DynamicListEditor title="其他 (Others)" listName="othersList" />
+            )}
+
+            {activeTab === 'sponsors' && (
+              <div className="animate-fade-in-up">
+                <DynamicListEditor title="合作廠商設定 (Sponsors)" listName="sponsorsList" />
+                <div className="mt-8 bg-zinc-950 p-5 rounded-xl border border-zinc-800">
+                  <h3 className="text-yellow-500 font-bold mb-4">折扣碼設定 (通用)</h3>
+                  <InputField label="全站專屬折扣碼" name="discountCode" />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'footer' && (
+              <div className="animate-fade-in-up">
+                <h2 className="text-2xl font-bold mb-6 text-white border-l-4 border-yellow-500 pl-3">頁尾設定 (Footer)</h2>
+                <div className="grid md:grid-cols-2 gap-x-6">
+                  <div className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 mb-6">
+                    <h3 className="text-yellow-500 font-bold mb-4">中文設定</h3>
+                    <InputField label="頁尾大標題" name="footerTitleCn" />
+                    <InputField label="版權宣告文字" name="footerCopyrightCn" />
+                  </div>
+                  <div className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 mb-6">
+                    <h3 className="text-yellow-500 font-bold mb-4">英文設定</h3>
+                    <InputField label="Footer Title" name="footerTitleEn" />
+                    <InputField label="Copyright Text" name="footerCopyrightEn" />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Sticky Save Button */}
+            <div className="mt-8 pt-6 border-t border-zinc-800 sticky bottom-0 bg-zinc-900 pb-2">
+              <button 
+                onClick={handleSave}
+                disabled={saving}
+                className="w-full bg-yellow-500 text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-yellow-400 transition-colors disabled:opacity-50 shadow-xl shadow-yellow-500/10 text-lg"
+              >
+                {saving ? <Loader2 className="animate-spin" size={24} /> : <Save size={24} />}
+                {saving ? '儲存同步中...' : '儲存所有變更並更新網站'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};

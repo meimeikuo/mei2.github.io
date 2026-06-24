@@ -1,24 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { LanguageProps } from '../types';
+import { useSiteContent } from '../hooks/useSiteContent';
 
 type AnimationPhase = 'typing1' | 'typing2' | 'waiting' | 'deleting2' | 'deleting1';
 
-const BG_IMAGES = [
-  "https://lh3.googleusercontent.com/pw/AP1GczPLdJHNa6h83EntmYan3Q2-3G7IBJDdPCHmPkORJfyVEtjzbQzarfMgrWz2OTBSMi3O2KhS42v1y_n-ihKkV8iMbQboW379yZeQVYB827o6T9pjSLA=w1800",
-  "https://lh3.googleusercontent.com/pw/AP1GczMoxHodg09o6FUmzNuuVdnMsZzrCGq-Rf_UtyuuCj6CpXY1DQNSdvC7RlwaNl7TXYgF3Zdyyru7KCU-nIY9jAGffjUyLTWA_20tVvHUpnJFmN9L_NQ=w1800",
-  "https://lh3.googleusercontent.com/pw/AP1GczPXUpuUQrDE3fqS7kRm-zSPuj1UTw5rOZaX3QYFLpLwArUlnyMCwK3NPulbi9fxGuyELhZXRDrsAZTIaZ4FQtzyWsUuJpyvtVRLiunsU4frHqwgvmo=w1800",
-  "https://i.ibb.co/27KpSbD5/LINE-ALBUM-2025-251210-8.jpg",
-  "https://i.ibb.co/d0Lt0Nmt/LINE-ALBUM-2025-251210-1.jpg",
-  "https://i.ibb.co/4nvv349R/LINE-ALBUM-2025-251210-2.jpg",
-  "https://i.ibb.co/mFC2jwRj/LINE-ALBUM-2025-251210-3.jpg",
-  "https://i.ibb.co/VWjDkwrX/LINE-ALBUM-2025-251210-4.jpg",
-  "https://i.ibb.co/354QWp6g/LINE-ALBUM-2025-251210-5.jpg",
-  "https://i.ibb.co/8gZwnFN6/LINE-ALBUM-2025-251210-6.jpg",
-  "https://i.ibb.co/wtqfqq8/LINE-ALBUM-2025-251210-7.jpg",
-  "https://i.ibb.co/YBbQRDdJ/LINE-ALBUM-2025-251210-9.jpg"
-];
-
 export const Hero: React.FC<LanguageProps> = ({ lang }) => {
+  const { content: siteContent } = useSiteContent();
   const [line1, setLine1] = useState('');
   const [line2, setLine2] = useState('');
   const [phase, setPhase] = useState<AnimationPhase>('typing1');
@@ -28,14 +15,14 @@ export const Hero: React.FC<LanguageProps> = ({ lang }) => {
   // Content configuration
   const staticContent = {
     en: {
-      subtitle: "IFBB Classic Physique Pro",
-      quote: "Discipline. Aesthetics. Legacy.",
-      subQuote: "Representing Taiwan on the global stage."
+      subtitle: siteContent.heroTitleEn,
+      quote: siteContent.heroQuoteEn,
+      subQuote: siteContent.heroSubquoteEn
     },
     cn: {
-      subtitle: "IFBB 古典職業健美選手",
-      quote: "自律。美學。傳奇。",
-      subQuote: "代表台灣站上世界舞台。"
+      subtitle: siteContent.heroTitleCn,
+      quote: siteContent.heroQuoteCn,
+      subQuote: siteContent.heroSubquoteCn
     }
   };
 
@@ -56,10 +43,12 @@ export const Hero: React.FC<LanguageProps> = ({ lang }) => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setBgIndex((prev) => (prev + 1) % BG_IMAGES.length);
+      if (siteContent.heroBgImages && siteContent.heroBgImages.length > 0) {
+        setBgIndex((prev) => (prev + 1) % siteContent.heroBgImages.length);
+      }
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [siteContent.heroBgImages]);
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
@@ -134,9 +123,9 @@ export const Hero: React.FC<LanguageProps> = ({ lang }) => {
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent z-10" />
         
-        {BG_IMAGES.map((src, index) => (
+        {siteContent.heroBgImages?.map((src: string, index: number) => (
           <img 
-            key={src}
+            key={`${src}-${index}`}
             src={src} 
             alt={`Jason Huang Background ${index}`} 
             className={`absolute inset-0 h-full w-full object-contain object-center transition-opacity duration-1000 ease-in-out ${
