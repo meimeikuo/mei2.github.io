@@ -242,7 +242,7 @@ export const Admin: React.FC = () => {
     );
   }
 
-  const InputField = ({ label, name, isTextarea = false }: { label: string, name: string, isTextarea?: boolean }) => (
+  const renderInputField = (label: string, name: string, isTextarea = false) => (
     <div className="mb-6">
       <label className="block text-sm font-medium text-zinc-400 mb-2">{label}</label>
       {isTextarea ? (
@@ -253,7 +253,7 @@ export const Admin: React.FC = () => {
     </div>
   );
 
-  const ImageField = ({ label, name }: { label: string, name: string }) => (
+  const renderImageField = (label: string, name: string) => (
     <div className="mb-6">
       <label className="block text-sm font-medium text-zinc-400 mb-2">{label}</label>
       <div className="flex gap-4 items-start">
@@ -286,7 +286,7 @@ export const Admin: React.FC = () => {
     { value: 'Zap', label: '閃電/能量 (Zap)' },
   ];
 
-  const DynamicListEditor = ({ title, listName }: { title: string, listName: string }) => (
+  const renderDynamicListEditor = (title: string, listName: string) => (
     <div className="animate-fade-in-up">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-white border-l-4 border-yellow-500 pl-3">{title}</h2>
@@ -482,7 +482,7 @@ export const Admin: React.FC = () => {
     });
   };
 
-  const CombinedCompetitionEditor = () => {
+  const renderCombinedCompetitionEditor = () => {
     const cnList = siteData.competitionsCn || [];
     const enList = siteData.competitionsEn || [];
     const length = Math.max(cnList.length, enList.length);
@@ -702,16 +702,16 @@ export const Admin: React.FC = () => {
                 <div className="grid md:grid-cols-2 gap-x-6">
                   <div className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 mb-6">
                     <h3 className="text-yellow-500 font-bold mb-4">中文設定</h3>
-                    <InputField label="副標題" name="heroTitleCn" />
-                    <InputField label="引言 (第一行)" name="heroQuoteCn" />
-                    <InputField label="引言 (第二行)" name="heroSubquoteCn" />
+                    {renderInputField("副標題", "heroTitleCn")}
+                    {renderInputField("引言 (第一行)", "heroQuoteCn")}
+                    {renderInputField("引言 (第二行)", "heroSubquoteCn")}
                   </div>
                   
                   <div className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 mb-6">
                     <h3 className="text-yellow-500 font-bold mb-4">英文設定</h3>
-                    <InputField label="Subtitle" name="heroTitleEn" />
-                    <InputField label="Quote (Line 1)" name="heroQuoteEn" />
-                    <InputField label="Quote (Line 2)" name="heroSubquoteEn" />
+                    {renderInputField("Subtitle", "heroTitleEn")}
+                    {renderInputField("Quote (Line 1)", "heroQuoteEn")}
+                    {renderInputField("Quote (Line 2)", "heroSubquoteEn")}
                   </div>
                 </div>
 
@@ -765,24 +765,24 @@ export const Admin: React.FC = () => {
             {activeTab === 'history' && (
               <div className="animate-fade-in-up">
                 <h2 className="text-2xl font-bold mb-6 text-white border-l-4 border-yellow-500 pl-3">職業生涯戰績 (Career)</h2>
-                <CombinedCompetitionEditor />
+                {renderCombinedCompetitionEditor()}
               </div>
             )}
 
             {activeTab === 'services' && (
-              <DynamicListEditor title="服務與社群連結 (Services)" listName="servicesList" />
+              renderDynamicListEditor("服務與社群連結 (Services)", "servicesList")
             )}
 
             {activeTab === 'others' && (
-              <DynamicListEditor title="其他 (Others)" listName="othersList" />
+              renderDynamicListEditor("其他 (Others)", "othersList")
             )}
 
             {activeTab === 'sponsors' && (
               <div className="animate-fade-in-up">
-                <DynamicListEditor title="合作廠商設定 (Sponsors)" listName="sponsorsList" />
+                {renderDynamicListEditor("合作廠商設定 (Sponsors)", "sponsorsList")}
                 <div className="mt-8 bg-zinc-950 p-5 rounded-xl border border-zinc-800">
                   <h3 className="text-yellow-500 font-bold mb-4">折扣碼設定 (通用)</h3>
-                  <InputField label="全站專屬折扣碼" name="discountCode" />
+                  {renderInputField("全站專屬折扣碼", "discountCode")}
                 </div>
               </div>
             )}
@@ -793,13 +793,13 @@ export const Admin: React.FC = () => {
                 <div className="grid md:grid-cols-2 gap-x-6">
                   <div className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 mb-6">
                     <h3 className="text-yellow-500 font-bold mb-4">中文設定</h3>
-                    <InputField label="頁尾大標題" name="footerTitleCn" />
-                    <InputField label="版權宣告文字" name="footerCopyrightCn" />
+                    {renderInputField("頁尾大標題", "footerTitleCn")}
+                    {renderInputField("版權宣告文字", "footerCopyrightCn")}
                   </div>
                   <div className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 mb-6">
                     <h3 className="text-yellow-500 font-bold mb-4">英文設定</h3>
-                    <InputField label="Footer Title" name="footerTitleEn" />
-                    <InputField label="Copyright Text" name="footerCopyrightEn" />
+                    {renderInputField("Footer Title", "footerTitleEn")}
+                    {renderInputField("Copyright Text", "footerCopyrightEn")}
                   </div>
                 </div>
               </div>
