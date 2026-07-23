@@ -223,29 +223,29 @@ export const Admin: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 select-none">
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 sm:p-6 select-none overflow-x-hidden">
         <div className="w-full max-w-3xl flex flex-col items-center">
           {/* 1. 頁面標題 */}
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-12 text-center text-white tracking-wider">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold mb-6 sm:mb-12 text-center text-white tracking-wider">
             請選擇角色
           </h1>
 
-          {/* 2. 角色卡片區域 (Flex layout 左右並排) */}
-          <div className="flex flex-row items-center justify-center gap-8 md:gap-14 mb-10 w-full">
+          {/* 2. 角色卡片區域 (響應式 Flex layout) */}
+          <div className="flex flex-row flex-wrap sm:flex-nowrap items-center justify-center gap-4 sm:gap-8 md:gap-14 mb-8 sm:mb-10 w-full px-2">
             {CHARACTERS.map((char) => {
               const isSelected = selectedCharacter?.id === char.id;
               return (
                 <div
                   key={char.id}
                   onClick={() => handleSelectCharacter(char)}
-                  className={`group relative flex flex-col items-center cursor-pointer p-8 md:p-10 rounded-3xl bg-zinc-900/90 border transition-all duration-300 transform hover:-translate-y-3 hover:scale-105 shadow-2xl ${
+                  className={`group relative flex flex-col items-center cursor-pointer p-4 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl bg-zinc-900/90 border transition-all duration-300 transform hover:-translate-y-2 sm:hover:-translate-y-3 hover:scale-105 shadow-2xl ${
                     isSelected
                       ? 'border-yellow-500 bg-zinc-800/90 shadow-[0_0_40px_rgba(250,204,21,0.35)] scale-105'
                       : 'border-zinc-800/80 hover:border-zinc-600 opacity-80 hover:opacity-100'
                   }`}
                 >
-                  {/* 3. 卡片內部結構: 頭像 (GIF - 放大一倍) */}
-                  <div className={`relative w-56 h-56 md:w-64 md:h-64 rounded-3xl overflow-hidden bg-black/40 flex items-center justify-center p-3 transition-all duration-300 ${
+                  {/* 3. 卡片內部結構: 頭像 (GIF - 響應式尺寸) */}
+                  <div className={`relative w-32 h-32 xs:w-40 xs:h-40 sm:w-52 sm:h-52 md:w-64 md:h-64 rounded-2xl sm:rounded-3xl overflow-hidden bg-black/40 flex items-center justify-center p-2 sm:p-3 transition-all duration-300 ${
                     isSelected 
                       ? 'ring-4 ring-yellow-400 shadow-[0_0_40px_rgba(250,204,21,0.8)] animate-pulse border-2 border-yellow-400' 
                       : 'border border-zinc-700/60 group-hover:border-zinc-500'
@@ -261,7 +261,7 @@ export const Admin: React.FC = () => {
                   </div>
 
                   {/* 角色名稱 */}
-                  <span className={`mt-6 font-bold text-xl md:text-2xl text-center transition-colors ${
+                  <span className={`mt-3 sm:mt-6 font-bold text-base sm:text-xl md:text-2xl text-center transition-colors ${
                     isSelected ? 'text-yellow-400' : 'text-zinc-300 group-hover:text-white'
                   }`}>
                     {char.name}
@@ -273,17 +273,17 @@ export const Admin: React.FC = () => {
 
           {/* 錯誤提示 */}
           {loginError && (
-            <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-6 py-3.5 rounded-xl mb-6 text-base text-center animate-fade-in max-w-md w-full">
+            <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 sm:px-6 py-3 sm:py-3.5 rounded-xl mb-6 text-sm sm:text-base text-center animate-fade-in max-w-md w-full">
               {loginError}
             </div>
           )}
 
           {/* 4. 動態顯示密碼框 (當選中角色時才呈現) */}
           {selectedCharacter && (
-            <form onSubmit={handleLogin} className="w-full max-w-md flex flex-col items-center gap-4 animate-fade-in transition-all duration-300">
+            <form onSubmit={handleLogin} className="w-full max-w-xs sm:max-w-md flex flex-col items-center gap-4 animate-fade-in transition-all duration-300">
               <div className="w-full">
-                <div className="text-sm text-zinc-400 mb-2 text-center">
-                  登入角色：<span className="text-yellow-400 font-semibold text-base">{selectedCharacter.name}</span>
+                <div className="text-xs sm:text-sm text-zinc-400 mb-2 text-center">
+                  登入角色：<span className="text-yellow-400 font-semibold text-sm sm:text-base">{selectedCharacter.name}</span>
                 </div>
                 <input
                   type="password"
@@ -292,14 +292,14 @@ export const Admin: React.FC = () => {
                   required
                   autoFocus
                   placeholder="請輸入密碼"
-                  className="w-full bg-zinc-900/90 border border-zinc-700 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 rounded-2xl p-4 text-white text-center text-lg outline-none transition-all placeholder:text-zinc-500 shadow-inner"
+                  className="w-full bg-zinc-900/90 border border-zinc-700 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 rounded-xl sm:rounded-2xl p-3 sm:p-4 text-white text-center text-base sm:text-lg outline-none transition-all placeholder:text-zinc-500 shadow-inner"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-yellow-500 text-black py-4 rounded-2xl font-bold text-lg hover:bg-yellow-400 active:scale-98 transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer"
+                className="w-full bg-yellow-500 text-black py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:bg-yellow-400 active:scale-98 transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer"
               >
                 {loading ? <Loader2 className="animate-spin" size={24} /> : "登 入"}
               </button>
