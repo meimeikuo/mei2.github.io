@@ -24,6 +24,21 @@ const ADMIN_EMAILS = [
   'jasmine.kuo@neurobraindynamics.com'
 ];
 
+const CHARACTERS = [
+  {
+    id: 'char-a',
+    name: '咩嚕咩嚕咩',
+    email: 'jas60523@gmail.com',
+    avatarUrl: 'https://lh3.googleusercontent.com/pw/AP1GczPdiKG6V033FtlvYMCb2_lwkpeT3H-FZaKPuQXCKOBtLZGO-fCZcSbb1L-g4que8XRgFfV-UIhghMlAAL8l3_V4_Twqu1ZsGpkOFXUOXFlN-sgbLXQ=w2400',
+  },
+  {
+    id: 'char-b',
+    name: '新爺裝逼',
+    email: 'yoshiki840417@gmail.com',
+    avatarUrl: 'https://lh3.googleusercontent.com/pw/AP1GczPMqw7UqpBTpL6kGrIFoG3F_qxX-zWl_pGRLblA1EwH3mY2Bci48veuJL6hbcCc5lpxn5AiLQxXisKxMv3UDSB9n1D3qzxxFPCx5vqyV_JsoUYwsfI=w2400',
+  }
+];
+
 type Tab = 'hero' | 'history' | 'services' | 'others' | 'sponsors' | 'footer';
 
 export const Admin: React.FC = () => {
@@ -31,6 +46,7 @@ export const Admin: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [siteData, setSiteData] = useState<any>(defaultContent);
+  const [selectedCharacter, setSelectedCharacter] = useState<typeof CHARACTERS[0] | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
@@ -94,18 +110,29 @@ export const Admin: React.FC = () => {
     setSaving(false);
   };
 
+  const handleSelectCharacter = (char: typeof CHARACTERS[0]) => {
+    setSelectedCharacter(char);
+    setEmail(char.email);
+    setLoginError('');
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    const loginEmail = selectedCharacter ? selectedCharacter.email : email;
+    if (!loginEmail) {
+      setLoginError('請先選擇角色');
+      return;
+    }
     setLoginError('');
     setLoading(true);
     try {
-      const userCredential = await loginWithEmail(email, password);
+      const userCredential = await loginWithEmail(loginEmail, password);
       if (!userCredential.user.email || !ADMIN_EMAILS.includes(userCredential.user.email)) {
         await logout();
         setLoginError("您沒有管理員權限");
       }
     } catch (error: any) {
-      setLoginError("登入失敗，請確認信箱與密碼是否正確。");
+      setLoginError("登入失敗，請確認密碼是否正確。");
     } finally {
       setLoading(false);
     }
@@ -196,47 +223,88 @@ export const Admin: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6">
-        <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 w-full max-w-md shadow-2xl">
-          <h1 className="text-3xl font-bold mb-8 text-center text-yellow-500">網站後台登入</h1>
-          
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 select-none">
+        <div className="w-full max-w-3xl flex flex-col items-center">
+          {/* 1. 頁面標題 */}
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-12 text-center text-white tracking-wider">
+            請選擇角色
+          </h1>
+
+          {/* 2. 角色卡片區域 (Flex layout 左右並排) */}
+          <div className="flex flex-row items-center justify-center gap-8 md:gap-14 mb-10 w-full">
+            {CHARACTERS.map((char) => {
+              const isSelected = selectedCharacter?.id === char.id;
+              return (
+                <div
+                  key={char.id}
+                  onClick={() => handleSelectCharacter(char)}
+                  className={`group relative flex flex-col items-center cursor-pointer p-8 md:p-10 rounded-3xl bg-zinc-900/90 border transition-all duration-300 transform hover:-translate-y-3 hover:scale-105 shadow-2xl ${
+                    isSelected
+                      ? 'border-yellow-500 bg-zinc-800/90 shadow-[0_0_40px_rgba(250,204,21,0.35)] scale-105'
+                      : 'border-zinc-800/80 hover:border-zinc-600 opacity-80 hover:opacity-100'
+                  }`}
+                >
+                  {/* 3. 卡片內部結構: 頭像 (GIF - 放大一倍) */}
+                  <div className={`relative w-56 h-56 md:w-64 md:h-64 rounded-3xl overflow-hidden bg-black/40 flex items-center justify-center p-3 transition-all duration-300 ${
+                    isSelected 
+                      ? 'ring-4 ring-yellow-400 shadow-[0_0_40px_rgba(250,204,21,0.8)] animate-pulse border-2 border-yellow-400' 
+                      : 'border border-zinc-700/60 group-hover:border-zinc-500'
+                  }`}>
+                    <img
+                      src={char.avatarUrl}
+                      alt={char.name}
+                      className={`w-full h-full object-contain object-center origin-center transition-transform duration-300 ${
+                        char.id === 'char-b' ? 'scale-150 -translate-y-[25%]' : ''
+                      }`}
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+
+                  {/* 角色名稱 */}
+                  <span className={`mt-6 font-bold text-xl md:text-2xl text-center transition-colors ${
+                    isSelected ? 'text-yellow-400' : 'text-zinc-300 group-hover:text-white'
+                  }`}>
+                    {char.name}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* 錯誤提示 */}
           {loginError && (
-            <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-lg mb-6 text-sm text-center">
+            <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-6 py-3.5 rounded-xl mb-6 text-base text-center animate-fade-in max-w-md w-full">
               {loginError}
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="flex flex-col gap-5">
-            <div>
-              <label className="block text-sm font-medium text-zinc-400 mb-2">電子信箱</label>
-              <input 
-                type="email" 
-                value={email} 
-                onChange={e => setEmail(e.target.value)} 
-                required 
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none transition-colors" 
-                placeholder="admin@example.com" 
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-zinc-400 mb-2">密碼</label>
-              <input 
-                type="password" 
-                value={password} 
-                onChange={e => setPassword(e.target.value)} 
-                required 
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-white focus:border-yellow-500 outline-none transition-colors" 
-                placeholder="••••••••" 
-              />
-            </div>
-            <button 
-              type="submit" 
-              disabled={loading} 
-              className="w-full bg-yellow-500 text-black px-6 py-3 rounded-xl font-bold hover:bg-yellow-400 transition-colors mt-4 flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              登入管理員帳號
-            </button>
-          </form>
+          {/* 4. 動態顯示密碼框 (當選中角色時才呈現) */}
+          {selectedCharacter && (
+            <form onSubmit={handleLogin} className="w-full max-w-md flex flex-col items-center gap-4 animate-fade-in transition-all duration-300">
+              <div className="w-full">
+                <div className="text-sm text-zinc-400 mb-2 text-center">
+                  登入角色：<span className="text-yellow-400 font-semibold text-base">{selectedCharacter.name}</span>
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  autoFocus
+                  placeholder="請輸入密碼"
+                  className="w-full bg-zinc-900/90 border border-zinc-700 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 rounded-2xl p-4 text-white text-center text-lg outline-none transition-all placeholder:text-zinc-500 shadow-inner"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-yellow-500 text-black py-4 rounded-2xl font-bold text-lg hover:bg-yellow-400 active:scale-98 transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer"
+              >
+                {loading ? <Loader2 className="animate-spin" size={24} /> : "登 入"}
+              </button>
+            </form>
+          )}
         </div>
       </div>
     );
