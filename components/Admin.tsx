@@ -52,6 +52,7 @@ export const Admin: React.FC = () => {
   const [loginError, setLoginError] = useState('');
   const [activeTab, setActiveTab] = useState<Tab>('hero');
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
+  const [statusNotification, setStatusNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     if (!auth) {
@@ -88,24 +89,25 @@ export const Admin: React.FC = () => {
         setSiteData(migrateData({}));
       }
     } catch (error) {
-      console.error("Error fetching data: ", error);
+      console.warn("Notice: Remote content not loaded, using default site data.", error);
     }
   };
 
   const handleSave = async () => {
     setSaving(true);
+    setStatusNotification(null);
     if (!db) {
-      alert("Firebase 未設定");
+      setStatusNotification({ type: 'error', message: "Firebase 未設定" });
       setSaving(false);
       return;
     }
     try {
       const docRef = doc(db, 'site', 'content');
       await setDoc(docRef, siteData, { merge: true });
-      alert("儲存成功！網頁已自動更新。");
+      setStatusNotification({ type: 'success', message: "儲存成功！網頁已自動更新。" });
     } catch (error) {
       console.error("Error saving data: ", error);
-      alert("儲存失敗，請確認您是否有編輯權限。");
+      setStatusNotification({ type: 'error', message: "儲存失敗，請確認您是否有編輯權限。" });
     }
     setSaving(false);
   };
@@ -166,7 +168,7 @@ export const Admin: React.FC = () => {
       }
     } catch (err) {
       console.error("Upload error", err);
-      alert("上傳圖片失敗！請確認 Firebase Storage 是否已開通且設定好權限 (Rules)。若尚未設定，您可以直接貼上網址。");
+      setStatusNotification({ type: 'error', message: "上傳圖片失敗！請確認 Firebase Storage 是否已開通且設定好權限 (Rules)。若尚未設定，您可以直接貼上網址。" });
     }
     
     setUploadingImage(null);
@@ -188,7 +190,7 @@ export const Admin: React.FC = () => {
       setSiteData(prev => ({ ...prev, [listName]: newList }));
     } catch (err) {
       console.error("Upload error", err);
-      alert("上傳圖片失敗！");
+      setStatusNotification({ type: 'error', message: "上傳圖片失敗！" });
     }
     
     setUploadingImage(null);
@@ -205,7 +207,7 @@ export const Admin: React.FC = () => {
     setSiteData(prev => ({ ...prev, [listName]: newList }));
   };
 
-  const handleListItemChange = (listName: string, index: number, field: keyof DynamicLink, value: string) => {
+  const handleListItemChange = (listName: string, index: number, field: string, value: string) => {
     const newList = [...(siteData[listName] || [])];
     newList[index] = { ...newList[index], [field]: value };
     setSiteData(prev => ({ ...prev, [listName]: newList }));
@@ -875,10 +877,20 @@ export const Admin: React.FC = () => {
 
             {/* Sticky Save Button */}
             <div className="mt-8 pt-6 border-t border-zinc-800 sticky bottom-0 bg-zinc-900 pb-2">
+              {statusNotification && (
+                <div className={`p-4 rounded-xl mb-4 text-sm flex justify-between items-center transition-all ${
+                  statusNotification.type === 'success' 
+                    ? 'bg-green-500/10 border border-green-500/40 text-green-400' 
+                    : 'bg-red-500/10 border border-red-500/40 text-red-400'
+                }`}>
+                  <span>{statusNotification.message}</span>
+                  <button onClick={() => setStatusNotification(null)} className="ml-4 hover:opacity-75 cursor-pointer">✕</button>
+                </div>
+              )}
               <button 
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full bg-yellow-500 text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-yellow-400 transition-colors disabled:opacity-50 shadow-xl shadow-yellow-500/10 text-lg"
+                className="w-full bg-yellow-500 text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-yellow-400 transition-colors disabled:opacity-50 shadow-xl shadow-yellow-500/10 text-lg cursor-pointer"
               >
                 {saving ? <Loader2 className="animate-spin" size={24} /> : <Save size={24} />}
                 {saving ? '儲存同步中...' : '儲存所有變更並更新網站'}

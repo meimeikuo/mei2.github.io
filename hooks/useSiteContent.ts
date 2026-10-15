@@ -151,26 +151,68 @@ export const migrateData = (data: any) => {
   return merged;
 };
 
+let cachedContent = defaultContent;
+let isLoaded = false;
+let activeListenersCount = 0;
+let unsubscribeFirestore: (() => void) | null = null;
+const listeners = new Set<(data: typeof defaultContent) => void>();
+
+function subscribeToContent(callback: (data: typeof defaultContent) => void) {
+  listeners.add(callback);
+  callback(cachedContent);
+
+  if (activeListenersCount === 0 && db) {
+    try {
+      const docRef = doc(db, 'site', 'content');
+      unsubscribeFirestore = onSnapshot(
+        docRef,
+        (docSnap) => {
+          if (docSnap.exists()) {
+            cachedContent = migrateData(docSnap.data());
+          }
+          isLoaded = true;
+          listeners.forEach((cb) => cb(cachedContent));
+        },
+        (error) => {
+          // If Firestore is restricted or permission is denied, fall back gracefully to default content
+          if (error && (error.code === 'permission-denied' || error.message?.includes('Missing or insufficient permissions'))) {
+            cachedContent = defaultContent;
+          } else {
+            console.warn("Unable to sync remote content, falling back to default content:", error?.message || error);
+          }
+          isLoaded = true;
+          listeners.forEach((cb) => cb(cachedContent));
+        }
+      );
+    } catch {
+      isLoaded = true;
+      callback(cachedContent);
+    }
+  } else if (!db) {
+    isLoaded = true;
+  }
+
+  activeListenersCount++;
+
+  return () => {
+    listeners.delete(callback);
+    activeListenersCount--;
+    if (activeListenersCount === 0 && unsubscribeFirestore) {
+      unsubscribeFirestore();
+      unsubscribeFirestore = null;
+    }
+  };
+}
+
 export const useSiteContent = () => {
-  const [content, setContent] = useState(defaultContent);
-  const [loading, setLoading] = useState(true);
+  const [content, setContent] = useState(cachedContent);
+  const [loading, setLoading] = useState(!isLoaded);
 
   useEffect(() => {
-    if (!db) {
-      setLoading(false);
-      return;
-    }
-    const docRef = doc(db, 'site', 'content');
-    const unsubscribe = onSnapshot(docRef, (docSnap) => {
-      if (docSnap.exists()) {
-        setContent(migrateData(docSnap.data()));
-      }
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching live content: ", error);
+    const unsubscribe = subscribeToContent((newContent) => {
+      setContent(newContent);
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 

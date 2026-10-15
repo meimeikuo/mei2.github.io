@@ -1,0 +1,36 @@
+{
+  "entities": {
+    "SiteContent": {
+      "title": "Site Content",
+      "description": "Portfolio website content including hero texts, career stats, services, and sponsors",
+      "type": "object",
+      "properties": {
+        "heroTitleCn": { "type": "string" },
+        "heroTitleEn": { "type": "string" },
+        "heroQuoteCn": { "type": "string" },
+        "heroQuoteEn": { "type": "string" },
+        "heroSubquoteCn": { "type": "string" },
+        "heroSubquoteEn": { "type": "string" },
+        "heroBgImages": { "type": "array" },
+        "competitionsCn": { "type": "array" },
+        "competitionsEn": { "type": "array" },
+        "servicesList": { "type": "array" },
+        "sponsorsList": { "type": "array" },
+        "othersList": { "type": "array" },
+        "discountCode": { "type": "string" },
+        "footerTitleCn": { "type": "string" },
+        "footerTitleEn": { "type": "string" },
+        "footerCopyrightCn": { "type": "string" },
+        "footerCopyrightEn": { "type": "string" },
+        "footerIg": { "type": "string" },
+        "footerEmail": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/site/{docId}": {
+      "schema": "SiteContent",
+      "description": "Global website configuration and editable content document"
+    }
+  }
+}
