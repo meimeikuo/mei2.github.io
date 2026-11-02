@@ -36,13 +36,23 @@ export const History: React.FC<LanguageProps> = ({ lang }) => {
   const yearGroups = useMemo<YearGroup[]>(() => {
     const list = [...t.competitions];
     const map = new Map<number, Competition[]>();
+    const seenIds = new Set<string>();
 
     list.forEach((comp, idx) => {
-      const id = comp.id || `${comp.year}-${idx}`;
-      const item = { ...comp, id };
-      const group = map.get(comp.year) || [];
+      // Normalize year strictly to number to prevent '2022' string and 2022 number creating duplicate React keys
+      const parsedYear = typeof comp.year === 'number' ? comp.year : parseInt(String(comp.year), 10);
+      const year = !isNaN(parsedYear) && parsedYear > 0 ? parsedYear : new Date().getFullYear();
+
+      let id = comp.id ? String(comp.id) : `comp-${year}-${idx}`;
+      if (seenIds.has(id)) {
+        id = `${id}-${idx}`;
+      }
+      seenIds.add(id);
+
+      const item: Competition = { ...comp, year, id };
+      const group = map.get(year) || [];
       group.push(item);
-      map.set(comp.year, group);
+      map.set(year, group);
     });
 
     const years = Array.from(map.keys()).sort((a, b) => b - a);
@@ -145,7 +155,7 @@ export const History: React.FC<LanguageProps> = ({ lang }) => {
         {/* Timeline Structure */}
         <div className="relative pl-6 sm:pl-10 ml-2 sm:ml-6 border-l-2 border-zinc-800/80 space-y-16 sm:space-y-20">
           {yearGroups.map((group) => (
-            <div key={group.year} className="relative group/year">
+            <div key={`year-group-${group.year}`} className="relative group/year">
               {/* Year Main Node */}
               <div className="absolute -left-[33px] sm:-left-[49px] top-0 flex items-center justify-center">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-zinc-950 border-2 border-yellow-500 flex items-center justify-center text-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.3)] z-20">

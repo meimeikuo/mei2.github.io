@@ -148,6 +148,29 @@ export const migrateData = (data: any) => {
     }));
   }
 
+  // Ensure competitions have numeric years and unique IDs
+  if (Array.isArray(merged.competitionsCn)) {
+    const seenCn = new Set<string>();
+    merged.competitionsCn = merged.competitionsCn.map((c: any, i: number) => {
+      const year = typeof c.year === 'number' ? c.year : (parseInt(String(c.year), 10) || 2025);
+      let id = c.id ? String(c.id) : `comp-cn-${year}-${i}`;
+      if (seenCn.has(id)) id = `${id}-${i}`;
+      seenCn.add(id);
+      return { ...c, id, year };
+    });
+  }
+
+  if (Array.isArray(merged.competitionsEn)) {
+    const seenEn = new Set<string>();
+    merged.competitionsEn = merged.competitionsEn.map((c: any, i: number) => {
+      const year = typeof c.year === 'number' ? c.year : (parseInt(String(c.year), 10) || 2025);
+      let id = c.id ? String(c.id) : `comp-en-${year}-${i}`;
+      if (seenEn.has(id)) id = `${id}-${i}`;
+      seenEn.add(id);
+      return { ...c, id, year };
+    });
+  }
+
   return merged;
 };
 

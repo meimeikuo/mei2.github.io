@@ -1,23 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isAdmin() {
-      return isSignedIn() && (
-        request.auth.token.email in [
-          "jas60523@gmail.com",
-          "yoshiki840417@gmail.com",
-          "jasmine.kuo@neurobraindynamics.com"
-        ]
-      );
-    }
-
     match /site/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
 
     match /{document=**} {

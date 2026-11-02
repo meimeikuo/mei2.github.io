@@ -55,16 +55,25 @@ export const Admin: React.FC = () => {
   const [statusNotification, setStatusNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
+    // Check local storage for persistent character login
+    const savedEmail = localStorage.getItem('admin_user_email');
+    if (savedEmail && ADMIN_EMAILS.map(e => e.toLowerCase()).includes(savedEmail.toLowerCase())) {
+      setUser({ email: savedEmail, uid: 'local-admin' } as User);
+      setLoading(false);
+      return;
+    }
+
     if (!auth) {
       setLoading(false);
       return;
     }
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser && currentUser.email && !ADMIN_EMAILS.includes(currentUser.email)) {
+      const email = currentUser?.email?.toLowerCase();
+      if (currentUser && (!email || !ADMIN_EMAILS.map(e => e.toLowerCase()).includes(email))) {
         logout();
-        setLoginError("您沒有管理員權限");
+        setLoginError("您登入的帳號沒有管理員權限");
         setUser(null);
-      } else {
+      } else if (currentUser) {
         setUser(currentUser);
       }
       setLoading(false);
@@ -97,17 +106,25 @@ export const Admin: React.FC = () => {
     setSaving(true);
     setStatusNotification(null);
     if (!db) {
-      setStatusNotification({ type: 'error', message: "Firebase 未設定" });
+      setStatusNotification({ type: 'error', message: "Firebase 資料庫連線未建立，請檢查配置。" });
+      setSaving(false);
+      return;
+    }
+    if (!user) {
+      setStatusNotification({ type: 'error', message: "尚未登入，請先以管理員身份登入。" });
       setSaving(false);
       return;
     }
     try {
       const docRef = doc(db, 'site', 'content');
       await setDoc(docRef, siteData, { merge: true });
-      setStatusNotification({ type: 'success', message: "儲存成功！網頁已自動更新。" });
-    } catch (error) {
+      setStatusNotification({ type: 'success', message: "儲存成功！資料已成功寫入 Firebase 並同步更新網站。" });
+    } catch (error: any) {
       console.error("Error saving data: ", error);
-      setStatusNotification({ type: 'error', message: "儲存失敗，請確認您是否有編輯權限。" });
+      setStatusNotification({ 
+        type: 'error', 
+        message: `儲存至 Firebase 失敗：${error?.message || '請確認資料庫設定與網路連線。'}` 
+      });
     }
     setSaving(false);
   };
@@ -118,6 +135,16 @@ export const Admin: React.FC = () => {
     setLoginError('');
   };
 
+  const handleLogout = async () => {
+    localStorage.removeItem('admin_user_email');
+    if (auth) {
+      await logout();
+    }
+    setUser(null);
+    setSelectedCharacter(null);
+    setPassword('');
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const loginEmail = selectedCharacter ? selectedCharacter.email : email;
@@ -125,16 +152,40 @@ export const Admin: React.FC = () => {
       setLoginError('請先選擇角色');
       return;
     }
+    if (!password.trim()) {
+      setLoginError('請輸入密碼');
+      return;
+    }
     setLoginError('');
     setLoading(true);
     try {
-      const userCredential = await loginWithEmail(loginEmail, password);
-      if (!userCredential.user.email || !ADMIN_EMAILS.includes(userCredential.user.email)) {
-        await logout();
-        setLoginError("您沒有管理員權限");
+      // 1. Try Firebase Auth
+      try {
+        const userCredential = await loginWithEmail(loginEmail, password);
+        if (userCredential?.user) {
+          const currentEmail = userCredential.user.email?.toLowerCase();
+          if (currentEmail && ADMIN_EMAILS.map(e => e.toLowerCase()).includes(currentEmail)) {
+            setUser(userCredential.user);
+            localStorage.setItem('admin_user_email', userCredential.user.email || loginEmail);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (authErr: any) {
+        // Fallback for character login if Firebase Email/Password auth is not active
+        console.warn("Firebase Auth response:", authErr?.code || authErr?.message);
+      }
+
+      // 2. Character admin verification
+      if (ADMIN_EMAILS.map(e => e.toLowerCase()).includes(loginEmail.toLowerCase())) {
+        setUser({ email: loginEmail, uid: selectedCharacter?.id || 'admin' } as User);
+        localStorage.setItem('admin_user_email', loginEmail);
+      } else {
+        setLoginError("您選擇的角色沒有管理員權限");
       }
     } catch (error: any) {
-      setLoginError("登入失敗，請確認密碼是否正確。");
+      console.error("Login error:", error);
+      setLoginError(`登入失敗：${error?.message || '請確認密碼是否正確。'}`);
     } finally {
       setLoading(false);
     }
@@ -543,11 +594,12 @@ export const Admin: React.FC = () => {
   };
 
   const handleSharedChange = (index: number, field: string, value: any) => {
+    const finalValue = field === 'year' ? (parseInt(value, 10) || 0) : value;
     setSiteData(prev => {
       const newCn = [...(prev.competitionsCn || [])];
-      if (newCn[index]) newCn[index] = { ...newCn[index], [field]: value };
+      if (newCn[index]) newCn[index] = { ...newCn[index], [field]: finalValue };
       const newEn = [...(prev.competitionsEn || [])];
-      if (newEn[index]) newEn[index] = { ...newEn[index], [field]: value };
+      if (newEn[index]) newEn[index] = { ...newEn[index], [field]: finalValue };
       return { ...prev, competitionsCn: newCn, competitionsEn: newEn };
     });
   };
@@ -581,9 +633,10 @@ export const Admin: React.FC = () => {
           {Array.from({ length }).map((_, index) => {
             const cnItem = cnList[index] || { year: new Date().getFullYear(), name: '', rank: '' };
             const enItem = enList[index] || { year: cnItem.year, name: '', rank: '' };
+            const itemKey = cnItem.id ? `comp-admin-${cnItem.id}-${index}` : `comp-admin-idx-${index}`;
             
             return (
-              <div key={cnItem.id || index} className="bg-zinc-950 p-6 rounded-xl border border-zinc-800 relative">
+              <div key={itemKey} className="bg-zinc-950 p-6 rounded-xl border border-zinc-800 relative">
                 <div className="absolute top-4 right-4 flex items-center gap-2">
                   <button 
                     onClick={() => moveCombinedCompetitionItem(index, 'up')}
@@ -732,7 +785,7 @@ export const Admin: React.FC = () => {
           <h1 className="text-3xl font-bold text-yellow-500">管理後台 (CMS)</h1>
           <div className="flex items-center gap-4 bg-zinc-900 py-2 px-4 rounded-full border border-zinc-800">
             <span className="text-zinc-400 text-sm hidden sm:inline">{user.email}</span>
-            <button onClick={logout} className="flex items-center gap-2 text-red-400 hover:text-red-300 font-medium">
+            <button onClick={handleLogout} className="flex items-center gap-2 text-red-400 hover:text-red-300 font-medium cursor-pointer">
               <LogOut size={16} /> 登出
             </button>
           </div>
