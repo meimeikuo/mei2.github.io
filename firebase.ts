@@ -40,7 +40,7 @@ export const firebaseConfig = {
   storageBucket,
   messagingSenderId,
   appId,
-  measurementId: getRawEnv('VITE_FIREBASE_MEASUREMENT_ID') || (getRawEnv('VITE_FIRESTORE_DATABASE_ID').startsWith('G-') ? getRawEnv('VITE_FIRESTORE_DATABASE_ID') : '') || appletConfig.measurementId || ''
+  measurementId: getRawEnv('VITE_FIREBASE_MEASUREMENT_ID') || appletConfig.measurementId || ''
 };
 
 const isConfigValid = !!firebaseConfig.apiKey;
